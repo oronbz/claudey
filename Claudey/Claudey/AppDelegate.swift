@@ -14,7 +14,7 @@ struct ClaudeyApp {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var companion: CompanionController?
-    private var menuBar: MenuBarController?
+    private var menu: CompanionMenuController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -25,8 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             #if DEBUG
             companion.onClick = { NSLog("Claudey was clicked") }
             #endif
+            let menu = CompanionMenuController(companion: companion)
+            companion.attach(menu.menu)
             companion.show()
-            menuBar = MenuBarController(companion: companion)
+            self.menu = menu
             self.companion = companion
         } catch {
             NSLog("Claudey could not load his sprites: \(error)")

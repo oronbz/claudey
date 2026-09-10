@@ -25,8 +25,8 @@ final class CompanionController {
             behavior.setHovering(isHovering, at: now)
             render()
         }
-        spriteView.onDrag = { [weak self] translation in
-            self?.move(by: translation)
+        spriteView.onMove = { [weak self] origin in
+            self?.panel.setFrameOrigin(origin)
         }
         spriteView.onDragEnd = { [weak self] in
             self?.positions.savedOrigin = self?.panel.frame.origin
@@ -47,28 +47,18 @@ final class CompanionController {
         )
     }
 
-    var isVisible: Bool { panel.isVisible }
+    func attach(_ menu: NSMenu) {
+        spriteView.menu = menu
+    }
 
     func show() {
         panel.orderFrontRegardless()
         render()
     }
 
-    func hide() {
-        frameTimer?.invalidate()
-        frameTimer = nil
-        behavior.setHovering(false, at: now)
-        panel.orderOut(nil)
-    }
-
     func show(_ animation: CompanionAnimation) {
         behavior.show(animation, at: now)
         render()
-    }
-
-    private func move(by translation: CGSize) {
-        let origin = panel.frame.origin
-        panel.setFrameOrigin(CGPoint(x: origin.x + translation.width, y: origin.y + translation.height))
     }
 
     private func render() {

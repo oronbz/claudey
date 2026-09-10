@@ -6,7 +6,8 @@ animation selection, frame timing, drag-versus-click, remembered position — is
 covered by `ClaudeyTests`.
 
 Build and run from Xcode (scheme `Claudey`, destination `My Mac`). The app has no
-Dock icon; it appears as a paw in the menu bar.
+Dock icon and no menu-bar icon: Claudey himself is the whole interface, and
+right-clicking him opens his menu.
 
 ## Presentation
 
@@ -27,12 +28,12 @@ Dock icon; it appears as a paw in the menu bar.
 - [ ] Quitting and relaunching restores his dragged position.
 - [ ] Disconnecting a display that held him brings him back into view.
 
-## Menu bar
+## His menu
 
-- [ ] Hide removes him from the desktop; Show brings him back in place.
+- [ ] Right-clicking him opens the menu without disturbing keyboard focus.
 - [ ] The development-only Reaction submenu plays each of the six reactions:
       idle, working, finished, needs-you, resting, hover.
-- [ ] Quit stops the app; no window or menu-bar item is left behind.
+- [ ] Quit stops the app cleanly and leaves nothing behind.
 
 ## Silence
 

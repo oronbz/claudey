@@ -2,7 +2,7 @@ import AppKit
 
 final class SpriteView: NSView {
     var onHoverChange: ((Bool) -> Void)?
-    var onDrag: ((CGSize) -> Void)?
+    var onMove: ((CGPoint) -> Void)?
     var onDragEnd: (() -> Void)?
     var onClick: (() -> Void)?
 
@@ -58,30 +58,26 @@ final class SpriteView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        interaction = PointerInteraction(startingAt: screenLocation(of: event))
+        guard let window else { return }
+        interaction = PointerInteraction(startingAt: NSEvent.mouseLocation, windowOrigin: window.frame.origin)
     }
 
     override func mouseDragged(with event: NSEvent) {
         guard var current = interaction else { return }
-        let translation = current.moved(to: screenLocation(of: event))
+        let origin = current.moved(to: NSEvent.mouseLocation)
         interaction = current
-        guard translation != .zero else { return }
-        onDrag?(translation)
+        guard let origin else { return }
+        onMove?(origin)
     }
 
     override func mouseUp(with event: NSEvent) {
         guard var current = interaction else { return }
-        let outcome = current.ended(at: screenLocation(of: event))
+        let outcome = current.ended(at: NSEvent.mouseLocation)
         interaction = nil
 
         switch outcome {
         case .click: onClick?()
         case .drag: onDragEnd?()
         }
-    }
-
-    private func screenLocation(of event: NSEvent) -> CGPoint {
-        guard let window else { return event.locationInWindow }
-        return window.convertPoint(toScreen: event.locationInWindow)
     }
 }
