@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Track specs and issues in GitHub Issues for `oronbz/claudey`.
+Track specs and issues in local Markdown under `.scratch/`.
 Before reading or publishing issues, read `docs/agents/issue-tracker.md`.
 
 ### Triage labels

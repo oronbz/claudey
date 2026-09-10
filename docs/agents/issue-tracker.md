@@ -1,13 +1,14 @@
-# Issue tracker: GitHub
+# Issue tracker: Local Markdown
 
-Issues and specs live in GitHub Issues for `oronbz/claudey`. Use `gh` with `--repo oronbz/claudey` or infer the repository from the origin remote.
+Issues and specs live in local Markdown under `.scratch/`. The public GitHub repository hosts code; its existence does not change the tracker choice.
 
-- Publishing means creating a GitHub issue. Pass multiline content through `--body-file`.
-- Read tickets with `gh issue view <number> --comments` and fetch their labels.
-- List issues with `gh issue list`, using state and label filters as appropriate.
-- Apply or remove triage labels with `gh issue edit` using the vocabulary in `triage-labels.md`.
-- Append discussion as issue comments; close resolved issues through the tracker.
+- Each feature lives in `.scratch/<feature-slug>/`.
+- Its canonical spec is `spec.md` within that directory.
+- Implementation tickets live in `issues/<NN>-<slug>.md`, numbered from 01, with one ticket per file.
+- Record triage state with a `Status:` line near the top. Use the vocabulary in `triage-labels.md`.
+- Record ticket dependencies in a `Blocked by:` field using local ticket numbers and titles.
+- Append discussion under `## Comments`.
 
-PRs as a request surface: no.
+Publishing means creating or updating the corresponding local file. Fetch tickets by their referenced path or feature and ticket number.
 
-GitHub issues are the canonical feature specs; local design and research documents provide supporting context.
+Claudey's authoritative spec lives at `.scratch/claudey/spec.md`.

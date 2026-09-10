@@ -1,6 +1,6 @@
 # Triage labels
 
-Canonical roles map directly to these label strings:
+Canonical roles map directly to these local `Status:` strings:
 
 - needs-triage: awaiting evaluation
 - needs-info: awaiting additional information

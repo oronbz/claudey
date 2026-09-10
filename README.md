@@ -13,4 +13,3 @@ Design and specification stage. The companion app and plugin are not implemented
 - [Design](docs/design.md)
 - [Domain glossary](CONTEXT.md)
 - [Architecture decision](docs/adr/0002-package-as-a-herdr-plugin-and-companion.md)
-- [Issues and specification](https://github.com/oronbz/claudey/issues)
