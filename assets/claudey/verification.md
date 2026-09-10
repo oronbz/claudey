@@ -29,6 +29,8 @@ After desktop review, replaced the 64 px atlas enlarged 2× with native 128 px c
 
 After expression review, replaced the angry inward-slanting brows in both Working frames with small relaxed eyes and a neutral mouth. The built-in imagegen edit established the visual direction; deterministic local drawing preserves every non-face pixel in the final atlas.
 
+After motion review, gave each Working frame its own facial anchor. Frame 4 moves the calm face two pixels left and one pixel up with its body pose. The verifier rejects identical face centroids across the two frames, preventing the expression from becoming visually pinned again.
+
 ## Standards
 
 Independent review: no findings. The assets and tools use canonical Working, Finished, and Needs you terminology and keep animation independent of Herdr, consistent with CONTEXT.md and ADR 0002. No actionable baseline code smells or documented-standard violations found.

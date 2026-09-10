@@ -59,14 +59,18 @@ def draw_calm_working_face(atlas, index):
     """Replace the generated angry brow shapes with a quiet focused face."""
     column, row = index % 4, index // 4
     origin = (column * CELL, row * CELL)
+    offset_x, offset_y = {3: (0, 0), 4: (-2, -1)}[index]
     cell = atlas.crop((*origin, origin[0] + CELL, origin[1] + CELL))
     draw = ImageDraw.Draw(cell)
     draw.rectangle((42, 66, 84, 86), fill=(*PALETTE[-1], 255))
 
     ink = (*PALETTE[0], 255)
-    draw.ellipse((48, 72, 56, 77), fill=ink)
-    draw.ellipse((72, 72, 80, 77), fill=ink)
-    draw.line((61, 82, 67, 82), fill=ink, width=2)
+    draw.ellipse((48 + offset_x, 72 + offset_y,
+                  56 + offset_x, 77 + offset_y), fill=ink)
+    draw.ellipse((72 + offset_x, 72 + offset_y,
+                  80 + offset_x, 77 + offset_y), fill=ink)
+    draw.line((61 + offset_x, 82 + offset_y,
+               67 + offset_x, 82 + offset_y), fill=ink, width=2)
     atlas.paste(cell, origin)
 
 

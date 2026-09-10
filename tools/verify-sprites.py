@@ -67,6 +67,8 @@ def main():
         assert top >= 16, f'happy-hover frame {index} has only {top}px top clearance'
 
     ink = tuple(bytes.fromhex(manifest['palette'][0][1:]))
+    working_offsets = {3: (0, 0), 4: (-2, -1)}
+    face_centroids = []
     for index in (3, 4):
         frame = manifest['frames'][index]
         box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
@@ -76,9 +78,15 @@ def main():
         assert all(pixel[:3] != ink for pixel in angry_brow_pixels), (
             f'working frame {index} contains dark marks in the angry-brow band'
         )
-        assert cell.getpixel((52, 75))[:3] == ink
-        assert cell.getpixel((76, 75))[:3] == ink
-        assert cell.getpixel((64, 82))[:3] == ink
+        offset_x, offset_y = working_offsets[index]
+        assert cell.getpixel((52 + offset_x, 75 + offset_y))[:3] == ink
+        assert cell.getpixel((76 + offset_x, 75 + offset_y))[:3] == ink
+        assert cell.getpixel((64 + offset_x, 82 + offset_y))[:3] == ink
+        face_pixels = [(x, y) for y in range(66, 86) for x in range(42, 84)
+                       if cell.getpixel((x, y))[:3] == ink]
+        face_centroids.append((sum(x for x, _ in face_pixels) / len(face_pixels),
+                               sum(y for _, y in face_pixels) / len(face_pixels)))
+    assert face_centroids[0] != face_centroids[1], 'Working face is pinned while its body moves'
 
     for animation in manifest['animations'].values():
         assert animation['playback'] in ('loop', 'once', 'hold')
