@@ -1,0 +1,31 @@
+:root { color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif; color: #49372f; background: #f6f3eb; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1100px; margin: auto; padding: 54px 36px 28px; }
+.eyebrow, .stage-label, .stage-foot, footer > span { font-size: 11px; letter-spacing: .16em; font-weight: 650; }
+.eyebrow { color: #956b55; margin: 0 0 22px; }
+h1 { font-family: Georgia, serif; font-size: clamp(36px, 5vw, 58px); font-weight: 400; line-height: 1.03; letter-spacing: -.045em; margin: 0; }
+.intro { color: #817369; margin: 19px 0 30px; }
+#animations, .transport { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select { font: inherit; font-size: 13px; border: 1px solid #dcd6ca; background: transparent; color: inherit; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+button[aria-pressed="true"] { background: #51392d; color: #fff8ef; border-color: #51392d; }
+button:hover { border-color: #ad6241; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #ca714d; outline-offset: 3px; }
+.transport { margin: 14px 0 24px; font-size: 12px; color: #77695f; }
+.transport label { margin-left: 12px; }
+input { accent-color: #ae5739; }
+.stages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stage { height: 300px; border-radius: 14px; position: relative; display: grid; place-items: center; overflow: hidden; }
+.light { background: #fffdf7; border: 1px solid #e8e2d7; }
+.dark { background: #26282d; color: #b2b2b6; }
+.stage-label { position: absolute; top: 21px; left: 24px; opacity: .65; }
+.stage-foot { position: absolute; bottom: 20px; left: 24px; font-weight: 400; letter-spacing: .04em; opacity: .6; }
+canvas { width: 128px; height: 128px; image-rendering: pixelated; }
+.caption { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 18px; margin: 22px 0 35px; min-height: 40px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.caption p, output { font-size: 12px; color: #817369; margin: 0; }
+output { font-variant-numeric: tabular-nums; }
+footer { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding-top: 22px; border-top: 1px solid #ded8cd; color: #8b7d72; }
+footer p, footer a { font-size: 11px; line-height: 1.8; margin: 0; color: inherit; }
+@media (max-width: 640px) { main { padding: 30px 20px; } .stages { grid-template-columns: 1fr; } .stage { height: 260px; } .caption { grid-template-columns: 1fr; gap: 8px; } footer { flex-wrap: wrap; } }
