@@ -2,7 +2,7 @@
 
 Generated September 10, 2026 with the built-in imagegen tool, using `source/soft-spark-reference.png` as the user's identity reference. No CLI/API fallback was used.
 
-The selected original output is committed as `source/generated-poses.png`. An imagegen follow-up requested real transparency but returned an opaque background again; that unused variant is not an input to this project. With the user's explicit permission, `tools/build-sprites.py` produces the final atlas and map locally. No project asset depends on a temporary or generator-only path.
+The selected original output is committed as `source/generated-poses.png`. An imagegen follow-up requested real transparency but returned an opaque background again; that unused variant is not an input to this project. With the user's explicit permission, `tools/build-sprites.py` produces the final atlas and map locally. The original 64 px build was later replaced by native 128 px cells with antialiased edges after desktop review found it too chunky. No project asset depends on a temporary or generator-only path.
 
 ## Original prompt
 

@@ -13,13 +13,13 @@
       <div id="animations" aria-label="Choose a reaction"></div>
       <div class="transport">
         <button id="pause" disabled>Pause</button><button id="replay" disabled>Replay</button>
-        <label>Scale <select id="scale"><option value="1">64 px · desktop</option><option value="2" selected>128 px · desktop</option><option value="3">192 px · inspection</option></select></label>
+        <label>Scale <select id="scale"><option value="0.5">64 px · compact</option><option value="1" selected>128 px · desktop</option><option value="1.5">192 px · inspection</option></select></label>
         <label><input type="checkbox" id="hover"> React to hover</label>
       </div>
     </section>
     <section class="stages" aria-label="Light and dark previews">
-      <div class="stage light"><span class="stage-label">DAYLIGHT</span><canvas width="64" height="64" aria-label="Claudey on a light background"></canvas><span class="stage-foot">Warm paper</span></div>
-      <div class="stage dark"><span class="stage-label">AFTER HOURS</span><canvas width="64" height="64" aria-label="Claudey on a dark background"></canvas><span class="stage-foot">Midnight ink</span></div>
+      <div class="stage light"><span class="stage-label">DAYLIGHT</span><canvas width="128" height="128" aria-label="Claudey on a light background"></canvas><span class="stage-foot">Warm paper</span></div>
+      <div class="stage dark"><span class="stage-label">AFTER HOURS</span><canvas width="128" height="128" aria-label="Claudey on a dark background"></canvas><span class="stage-foot">Midnight ink</span></div>
     </section>
     <div class="caption"><h2 id="name">Loading sprites…</h2><p id="description" role="status"></p><output id="frame"></output></div>
     <footer><span>SOFT SPARK</span><p>Asset review only. Switch reactions at any moment to inspect transitions.<br>Finished returns to idle. Needs you waves once, then holds.</p><a href="../../assets/claudey/animations.json">Frame map ↗</a></footer>

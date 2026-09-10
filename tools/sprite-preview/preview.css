@@ -21,7 +21,7 @@ input { accent-color: #ae5739; }
 .dark { background: #26282d; color: #b2b2b6; }
 .stage-label { position: absolute; top: 21px; left: 24px; opacity: .65; }
 .stage-foot { position: absolute; bottom: 20px; left: 24px; font-weight: 400; letter-spacing: .04em; opacity: .6; }
-canvas { width: 128px; height: 128px; image-rendering: pixelated; }
+canvas { width: 128px; height: 128px; image-rendering: auto; }
 .caption { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 18px; margin: 22px 0 35px; min-height: 40px; }
 h2 { font-size: 15px; font-weight: 600; margin: 0; }
 .caption p, output { font-size: 12px; color: #817369; margin: 0; }

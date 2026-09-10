@@ -10,9 +10,49 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets' / 'claudey'
 SOURCE = ASSETS / 'source' / 'generated-poses.png'
-CELL = 64
-PALETTE = [(83, 41, 24), (177, 76, 38), (225, 111, 57), (239, 128, 66)]
+CELL = 128
+PALETTE = [
+    (83, 41, 24),
+    (154, 62, 30),
+    (185, 77, 37),
+    (211, 94, 45),
+    (225, 111, 57),
+    (239, 128, 66),
+]
 SOURCE_ROWS = [0, 313, 625, 918, 1254]
+
+
+def remove_compression_debris(image):
+    """Drop colored compression flecks left by the generated checkerboard."""
+    alpha = image.getchannel('A')
+    pixels = alpha.load()
+    unseen = {(x, y) for y in range(alpha.height) for x in range(alpha.width)
+              if pixels[x, y] > 0}
+    components = []
+    while unseen:
+        component = {unseen.pop()}
+        pending = list(component)
+        while pending:
+            x, y = pending.pop()
+            for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1),
+                             (x - 1, y - 1), (x + 1, y - 1),
+                             (x - 1, y + 1), (x + 1, y + 1)):
+                if neighbor in unseen:
+                    unseen.remove(neighbor)
+                    component.add(neighbor)
+                    pending.append(neighbor)
+        components.append(component)
+    largest = max(components, key=len)
+    # Eyes and mouths can be isolated by a one-pixel transparent antialias gap;
+    # retain meaningful marks while rejecting tiny compression debris.
+    keep = set().union(*(component for component in components
+                         if component is largest or len(component) >= 6))
+    cleaned = []
+    for y in range(image.height):
+        for x in range(image.width):
+            r, g, b, value = image.getpixel((x, y))
+            cleaned.append((r, g, b, value) if (x, y) in keep else (0, 0, 0, 0))
+    image.putdata(cleaned)
 
 
 def build():
@@ -29,26 +69,30 @@ def build():
                             SOURCE_ROWS[row + 1]))
         # The generated background is achromatic; all character colors are warm.
         mask = Image.new('L', pose.size)
-        mask.putdata([255 if r > g * 1.35 and r - b > 30 else 0
+        mask.putdata([max(0, min(255, (r - max(g, b) - 7) * 9))
                       for r, g, b in pose.get_flattened_data()])
         bounds = mask.getbbox()
         if bounds is None:
             raise ValueError(f'No character in source cell {index}')
         pose.putalpha(mask)
         pose = pose.crop(bounds)
-        # One scale for every pose preserves relative width and squash/stretch.
-        pose = pose.resize((round(pose.width * .19), round(pose.height * .19)),
-                           Image.Resampling.NEAREST)
-        # Quantize to four opaque colors, eliminating gradient and matte fringes.
+        # One scale preserves relative width and squash/stretch. Native 128 px
+        # cells avoid enlarging a low-resolution atlas for desktop display.
+        pose = pose.resize((round(pose.width * .36), round(pose.height * .36)),
+                           Image.Resampling.LANCZOS)
+        # Quantize opaque color while retaining clean antialiased edge alpha.
         pixels = []
         for r, g, b, alpha in pose.get_flattened_data():
             color = min(PALETTE, key=lambda c: sum((a - v) ** 2 for a, v in zip(c, (r, g, b))))
-            pixels.append((*color, 255) if alpha else (0, 0, 0, 0))
+            pixels.append((*color, alpha) if alpha else (0, 0, 0, 0))
         pose.putdata(pixels)
-        lift = {6: 4, 7: 8}.get(index, 0)
-        x = (CELL - pose.width) // 2
-        y = 56 - pose.height - lift
-        if x < 2 or y < 2 or x + pose.width > CELL - 2:
+        remove_compression_debris(pose)
+        lift = {6: 8, 7: 16}.get(index, 0)
+        visible = pose.getbbox()
+        left, top, right, bottom = visible
+        x = (CELL - (right - left)) // 2 - left
+        y = 112 - bottom - lift
+        if x + left < 4 or y + top < 4 or x + right > CELL - 4:
             raise ValueError(f'Pose {index} exceeds safe cell bounds')
         atlas.alpha_composite(pose, (column * CELL + x, row * CELL + y))
         rectangles.append(dict(x=column * CELL, y=row * CELL, width=CELL, height=CELL))
@@ -61,9 +105,9 @@ def build():
 
     manifest = dict(
         version=1, image='sprites.png',
-        sheet=dict(width=256, height=256, columns=4, rows=4),
-        cell=dict(width=CELL, height=CELL), anchor=dict(x=32, y=56),
-        desktopScale=2, palette=['#%02x%02x%02x' % c for c in PALETTE],
+        sheet=dict(width=512, height=512, columns=4, rows=4),
+        cell=dict(width=CELL, height=CELL), anchor=dict(x=64, y=112),
+        desktopScale=1, palette=['#%02x%02x%02x' % c for c in PALETTE],
         frames=rectangles,
         animations={
             'idle': animation('loop', [(0, 1200), (1, 950), (0, 600), (2, 140), (0, 800), (1, 950)]),

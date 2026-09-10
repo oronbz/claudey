@@ -2,23 +2,25 @@
   "version": 1,
   "image": "sprites.png",
   "sheet": {
-    "width": 256,
-    "height": 256,
+    "width": 512,
+    "height": 512,
     "columns": 4,
     "rows": 4
   },
   "cell": {
-    "width": 64,
-    "height": 64
+    "width": 128,
+    "height": 128
   },
   "anchor": {
-    "x": 32,
-    "y": 56
+    "x": 64,
+    "y": 112
   },
-  "desktopScale": 2,
+  "desktopScale": 1,
   "palette": [
     "#532918",
-    "#b14c26",
+    "#9a3e1e",
+    "#b94d25",
+    "#d35e2d",
     "#e16f39",
     "#ef8042"
   ],
@@ -26,98 +28,98 @@
     {
       "x": 0,
       "y": 0,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 64,
-      "y": 0,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
     },
     {
       "x": 128,
       "y": 0,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
     },
     {
-      "x": 192,
+      "x": 256,
       "y": 0,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
     },
     {
-      "x": 0,
-      "y": 64,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 64,
-      "y": 64,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 128,
-      "y": 64,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 192,
-      "y": 64,
-      "width": 64,
-      "height": 64
+      "x": 384,
+      "y": 0,
+      "width": 128,
+      "height": 128
     },
     {
       "x": 0,
       "y": 128,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 64,
-      "y": 128,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
     },
     {
       "x": 128,
       "y": 128,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
     },
     {
-      "x": 192,
+      "x": 256,
       "y": 128,
-      "width": 64,
-      "height": 64
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 384,
+      "y": 128,
+      "width": 128,
+      "height": 128
     },
     {
       "x": 0,
-      "y": 192,
-      "width": 64,
-      "height": 64
-    },
-    {
-      "x": 64,
-      "y": 192,
-      "width": 64,
-      "height": 64
+      "y": 256,
+      "width": 128,
+      "height": 128
     },
     {
       "x": 128,
-      "y": 192,
-      "width": 64,
-      "height": 64
+      "y": 256,
+      "width": 128,
+      "height": 128
     },
     {
-      "x": 192,
-      "y": 192,
-      "width": 64,
-      "height": 64
+      "x": 256,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 384,
+      "y": 256,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 0,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 128,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 256,
+      "y": 384,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "x": 384,
+      "y": 384,
+      "width": 128,
+      "height": 128
     }
   ],
   "animations": {
