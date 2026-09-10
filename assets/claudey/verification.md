@@ -8,6 +8,8 @@ Verified September 10, 2026.
 - Verified 512 × 512 RGBA output with sixteen native 128 px cells, antialiased alpha, and six opaque palette colors.
 - Checked all sixteen frame bounds: at least four transparent pixels from each cell edge, baseline at y=112 except intentional hop frames at y=104 and y=96.
 - Checked every frame for tiny disconnected compression debris and both hover frames for at least sixteen pixels of top clearance.
+- Checked both Working frames contain no dark pixels in the inward-slanting eyebrow band and retain the expected calm eyes and neutral mouth.
+- Compared with the preceding atlas: all fourteen non-Working cells are byte-for-byte identical, and Working-frame pixels outside the small face rectangle are unchanged.
 - Checked every frame reference, positive duration, and loop/once/hold value in the six animation sequences.
 - Passed `node --check tools/sprite-preview/preview.js`.
 - Passed TypeScript checking of the JavaScript with `tsc --noEmit --allowJs --checkJs --target ES2022 --module ES2022 --lib ES2022,DOM,DOM.Iterable tools/sprite-preview/preview.js`.
@@ -24,6 +26,8 @@ Observed Working looping, Finished hopping and returning to Idle, and Needs you 
 Corrected two defects before review: imagegen's opaque checkerboard was removed with user-approved local processing; inspected source row boundaries prevent the fourth row's tuft from leaking into the wave frame.
 
 After desktop review, replaced the 64 px atlas enlarged 2× with native 128 px cells and softer silhouette sampling. The hover frames now have 23–24 px of top clearance. A regression check reproduces the old quality failure and rejects inadequate native resolution, insufficient hover clearance, alignment drift, and disconnected checkerboard debris. Browser inspection confirmed the final hover animation has visible space above the entire tuft on both backgrounds.
+
+After expression review, replaced the angry inward-slanting brows in both Working frames with small relaxed eyes and a neutral mouth. The built-in imagegen edit established the visual direction; deterministic local drawing preserves every non-face pixel in the final atlas.
 
 ## Standards
 

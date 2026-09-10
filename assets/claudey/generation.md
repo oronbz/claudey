@@ -4,6 +4,8 @@ Generated September 10, 2026 with the built-in imagegen tool, using `source/soft
 
 The selected original output is committed as `source/generated-poses.png`. An imagegen follow-up requested real transparency but returned an opaque background again; that unused variant is not an input to this project. With the user's explicit permission, `tools/build-sprites.py` produces the final atlas and map locally. The original 64 px build was later replaced by native 128 px cells with antialiased edges after desktop review found it too chunky. No project asset depends on a temporary or generator-only path.
 
+The working-expression edit was generated with the built-in imagegen tool and is committed as `source/working-expression-reference.png`. The edit established the calm expression direction; the build script transfers only the face treatment into frames 3 and 4 so atlas geometry and the other fourteen frames remain deterministic.
+
 ## Original prompt
 
 ```text
@@ -34,4 +36,13 @@ Silhouette should match user's Soft Spark reference closely. Flat warm orange an
 
 ```text
 Edit this sprite sheet. Remove the entire gray and white checkerboard background and replace with REAL transparent alpha pixels (PNG RGBA), not an image of checkerboard. Keep every orange sprite and dark brown facial feature unchanged in exactly its original position. Output exactly 1024x1024 in a strict 4x4 equal grid of 256x256 cells. All gray, white and background pixels must have alpha zero. Preserve the 16 sprites, clean hard pixel edges. Do not draw checkerboards, backgrounds, shadows or any new content.
+```
+
+## Working-expression edit prompt
+
+```text
+Use case: precise-object-edit.
+Asset type: transparent production sprite atlas.
+Primary request: Change only the facial expressions in animation frames 3 and 4: the top-right sprite and the leftmost sprite in the second row. They currently look angry. Make both read as calm, gentle concentration: relaxed slightly lowered or softly curved eyes, no inward V-shaped angry eyebrows, and a tiny neutral focused mouth. Claudey should look absorbed in work, never upset or stern.
+Constraints: preserve the exact 512x512 canvas, transparent alpha background, strict 4x4 grid, every sprite position, silhouette, scale, orange palette, antialiased edge, and all other 14 sprites pixel-for-pixel as closely as possible. Do not add symbols, props, sweat, text, borders, backgrounds, or checkerboards. The two edited sprites must remain the same character and remain aligned to the same baseline.
 ```

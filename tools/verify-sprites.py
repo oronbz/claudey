@@ -66,6 +66,20 @@ def main():
         top = image.crop(box).getbbox()[1]
         assert top >= 16, f'happy-hover frame {index} has only {top}px top clearance'
 
+    ink = tuple(bytes.fromhex(manifest['palette'][0][1:]))
+    for index in (3, 4):
+        frame = manifest['frames'][index]
+        box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
+        cell = image.crop(box)
+        angry_brow_pixels = [cell.getpixel((x, y)) for y in range(66, 71)
+                             for x in range(44, 82)]
+        assert all(pixel[:3] != ink for pixel in angry_brow_pixels), (
+            f'working frame {index} contains dark marks in the angry-brow band'
+        )
+        assert cell.getpixel((52, 75))[:3] == ink
+        assert cell.getpixel((76, 75))[:3] == ink
+        assert cell.getpixel((64, 82))[:3] == ink
+
     for animation in manifest['animations'].values():
         assert animation['playback'] in ('loop', 'once', 'hold')
         for frame in animation['frames']:

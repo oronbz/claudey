@@ -5,7 +5,7 @@ Requires Pillow. Run from any directory; all inputs are project-local.
 
 from pathlib import Path
 import json
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets' / 'claudey'
@@ -55,6 +55,21 @@ def remove_compression_debris(image):
     image.putdata(cleaned)
 
 
+def draw_calm_working_face(atlas, index):
+    """Replace the generated angry brow shapes with a quiet focused face."""
+    column, row = index % 4, index // 4
+    origin = (column * CELL, row * CELL)
+    cell = atlas.crop((*origin, origin[0] + CELL, origin[1] + CELL))
+    draw = ImageDraw.Draw(cell)
+    draw.rectangle((42, 66, 84, 86), fill=(*PALETTE[-1], 255))
+
+    ink = (*PALETTE[0], 255)
+    draw.ellipse((48, 72, 56, 77), fill=ink)
+    draw.ellipse((72, 72, 80, 77), fill=ink)
+    draw.line((61, 82, 67, 82), fill=ink, width=2)
+    atlas.paste(cell, origin)
+
+
 def build():
     source = Image.open(SOURCE).convert('RGB')
     if source.size != (1254, 1254):
@@ -96,6 +111,9 @@ def build():
             raise ValueError(f'Pose {index} exceeds safe cell bounds')
         atlas.alpha_composite(pose, (column * CELL + x, row * CELL + y))
         rectangles.append(dict(x=column * CELL, y=row * CELL, width=CELL, height=CELL))
+
+    for index in (3, 4):
+        draw_calm_working_face(atlas, index)
 
     atlas.save(ASSETS / 'sprites.png')
 
