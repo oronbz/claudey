@@ -4,6 +4,7 @@ final class CompanionController {
     var onClick: (() -> Void)?
 
     private let behavior: CompanionBehavior
+    private let director: CompanionDirector
     private let panel: CompanionPanel
     private let spriteView: SpriteView
     private let positions: CompanionPositionStore
@@ -14,6 +15,7 @@ final class CompanionController {
     init(catalog: AnimationCatalog, sheet: SpriteSheet, positions: CompanionPositionStore = CompanionPositionStore()) {
         self.positions = positions
         behavior = CompanionBehavior(catalog: catalog, startedAt: ProcessInfo.processInfo.systemUptime)
+        director = CompanionDirector(behavior: behavior)
 
         let size = catalog.desktopSize
         panel = CompanionPanel(size: size)
@@ -58,6 +60,11 @@ final class CompanionController {
 
     func show(_ animation: CompanionAnimation) {
         behavior.show(animation, at: now)
+        render()
+    }
+
+    func apply(_ event: ActivityEvent) {
+        director.apply(event, at: now)
         render()
     }
 

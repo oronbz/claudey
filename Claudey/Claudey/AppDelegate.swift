@@ -15,9 +15,16 @@ struct ClaudeyApp {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var companion: CompanionController?
     private var menu: CompanionMenuController?
+    private var herdr: HerdrConnection?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+
+        guard Self.isRunningTests || Self.isTheOnlyInstance else {
+            NSLog("Claudey is already running; leaving the existing companion in place")
+            NSApp.terminate(nil)
+            return
+        }
 
         do {
             let catalog = try AnimationCatalog.bundled()
@@ -30,13 +37,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             companion.show()
             self.menu = menu
             self.companion = companion
+
+            guard !Self.isRunningTests else { return }
+            let herdr = HerdrConnection(transport: HerdrSocketTransport(), scheduler: TimerScheduler()) {
+                HerdrConnectionContext.resolve().socketPath
+            }
+            herdr.onEvent = { [weak companion] event in
+                #if DEBUG
+                NSLog("Claudey activity: \(event)")
+                #endif
+                companion?.apply(event)
+            }
+            herdr.start()
+            self.herdr = herdr
         } catch {
             NSLog("Claudey could not load his sprites: \(error)")
             NSApp.terminate(nil)
         }
     }
 
+    /// The plugin's launcher reopens the running app after rewriting the
+    /// connection context, so a reopen is the cue to re-read it.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        herdr?.refresh()
+        return false
+    }
+
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         true
+    }
+
+    /// The test host must neither yield to a developer's running copy nor
+    /// talk to the real Herdr socket.
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestSessionIdentifier"] != nil
+    }
+
+    private static var isTheOnlyInstance: Bool {
+        guard let bundleID = Bundle.main.bundleIdentifier else { return true }
+        return NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+            .allSatisfy { $0.processIdentifier == ProcessInfo.processInfo.processIdentifier }
     }
 }

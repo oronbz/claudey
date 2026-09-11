@@ -36,6 +36,24 @@ right-clicking him opens his menu.
       idle, working, finished, needs-you, resting, hover.
 - [x] Quit stops the app cleanly and leaves nothing behind.
 
+## Herdr (issue 03)
+
+Run `tools/demo-live-session.sh` from a pane inside Herdr; the Xcode console
+logs each `Claudey activity:` event in a debug build.
+
+- [x] Launching with Herdr running shows the current state without a hop:
+      idle with agents at rest, concentration if one is already working.
+- [x] The demo's first prompt plays concentration, then exactly one hop, then idle.
+- [x] The demo's question plays the wave and holds the questioning pose until
+      it is answered; answering resumes concentration and ends with one hop.
+- [x] Closing the demo pane returns him to rest without a hop.
+- [x] `herdr plugin action invoke claudey.connect` while he is running writes
+      the connection file and leaves a single Claudey process.
+- [x] A second copy launched while one is running quits itself immediately.
+- [ ] Stopping the Herdr server puts him to rest; starting it again reconnects
+      him within a few seconds without a hop.
+- [ ] Typing in another app is undisturbed while a status change arrives.
+
 ## Silence
 
 - [x] No sound, no notifications, no badges, no dashboards.

@@ -8,8 +8,9 @@ Claudey will live above ordinary macOS windows, react when agents work, finish, 
 
 The macOS companion runs locally: he floats above ordinary windows, breathes and
 blinks, reacts to hovering, remembers where he is dragged, and quits from his
-own right-click menu. Herdr integration is not implemented yet, so
-his reactions are exercised from the development-only Reaction menu.
+own right-click menu. Connected to Herdr, he concentrates while an agent works,
+hops once when a response ends, and waves then holds a questioning pose while
+an agent waits for you. Clicking him does not navigate yet (issue 04).
 
 ## Running him
 
@@ -18,12 +19,20 @@ appears in the lower right of the screen, with no Dock icon and no menu-bar
 icon; right-click him for his menu. `Claudey/Claudey/Resources` links the committed sprite sheet and
 frame map from `assets/claudey`.
 
+Link the Herdr plugin with `herdr plugin link "$PWD/plugin"`; its startup hook
+and `Connect Claudey` action start or reconnect him. Without it he watches
+Herdr's default socket. See [Herdr integration](docs/herdr-integration.md) for
+the state mapping, protocol notes, limitations and the live demo script.
+
 Tests: `Claudey/ClaudeyTests` (Swift Testing) covers the frame map, animation
-timing, reaction selection, drag-versus-click and position restoration. Window
-behavior is checked by hand — see [manual verification](docs/manual-verification.md).
+timing, reaction selection, drag-versus-click, position restoration, and
+realistic Herdr snapshots and events driving his reactions through a fake
+socket. Window behavior is checked by hand — see
+[manual verification](docs/manual-verification.md).
 
 ## Project docs
 
 - [Design](docs/design.md)
 - [Domain glossary](CONTEXT.md)
 - [Architecture decision](docs/adr/0002-package-as-a-herdr-plugin-and-companion.md)
+- [Herdr integration](docs/herdr-integration.md)

@@ -1,0 +1,16 @@
+id = "claudey"
+name = "Claudey"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Wake the Claudey desktop companion and point him at this Herdr session."
+platforms = ["macos"]
+
+[[startup]]
+command = ["bash", "claudey-connect.sh"]
+
+[[actions]]
+id = "connect"
+title = "Connect Claudey"
+description = "Start the companion if needed and connect him to this Herdr session."
+contexts = ["global"]
+command = ["bash", "claudey-connect.sh"]
