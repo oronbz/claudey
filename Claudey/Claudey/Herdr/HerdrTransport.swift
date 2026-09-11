@@ -7,7 +7,8 @@ protocol HerdrSubscriptionHandle: AnyObject {
 
 /// Herdr answers exactly one request per connection and then hangs up, so a
 /// request and a subscription are separate connections rather than a shared
-/// channel. Callbacks are delivered on the main actor.
+/// channel. Callbacks are delivered on the main actor; cancelling a
+/// subscription does not report a close.
 protocol HerdrTransport: AnyObject {
     func request(
         _ line: Data,
@@ -34,19 +35,18 @@ final class HerdrSocketTransport: HerdrTransport {
         socketPath: String,
         completion: @escaping @MainActor (Result<Data, Error>) -> Void
     ) {
-        var answered = false
         var stream: HerdrLineStream?
         stream = HerdrLineStream(
             socketPath: socketPath,
             onLine: { data in
-                guard !answered else { return }
-                answered = true
+                guard let answering = stream else { return }
+                stream = nil
+                answering.cancel()
                 completion(.success(data))
-                stream?.cancel()
             },
             onClose: { error in
-                guard !answered else { return }
-                answered = true
+                guard stream != nil else { return }
+                stream = nil
                 completion(.failure(error ?? HerdrTransportError.closedWithoutResponse))
             }
         )
@@ -107,7 +107,7 @@ nonisolated final class HerdrLineStream: HerdrSubscriptionHandle, @unchecked Sen
     }
 
     func cancel() {
-        finish(nil)
+        finish(nil, notify: false)
     }
 
     private func receive() {
@@ -135,11 +135,12 @@ nonisolated final class HerdrLineStream: HerdrSubscriptionHandle, @unchecked Sen
         }
     }
 
-    private func finish(_ error: Error?) {
+    private func finish(_ error: Error?, notify: Bool = true) {
         guard !closed else { return }
         closed = true
         connection.stateUpdateHandler = nil
         connection.cancel()
+        guard notify else { return }
         let onClose = onClose
         MainActor.assumeIsolated { onClose(error) }
     }

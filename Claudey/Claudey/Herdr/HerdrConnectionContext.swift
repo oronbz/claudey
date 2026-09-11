@@ -1,8 +1,5 @@
 import Foundation
 
-/// Where the companion learns which Herdr socket to watch. The plugin writes
-/// the context file on every activation; a developer launch without the
-/// plugin falls back to the environment and then Herdr's default socket.
 struct HerdrConnectionContext: Equatable, Sendable {
     let socketPath: String
 

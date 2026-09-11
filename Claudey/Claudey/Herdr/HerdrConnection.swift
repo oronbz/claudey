@@ -27,14 +27,13 @@ final class HerdrConnection {
     private var reconcileScheduled = false
     private var snapshotInFlight = false
     private var nextRequestID = 0
+    private var generation = 0
 
     init(transport: HerdrTransport, scheduler: DelayScheduler, socketPath: @escaping () -> String) {
         self.transport = transport
         self.scheduler = scheduler
         self.socketPath = socketPath
     }
-
-    var isLive: Bool { live }
 
     func start() {
         guard !running else { return }
@@ -47,8 +46,6 @@ final class HerdrConnection {
         tearDown()
     }
 
-    /// Re-reads the connection context; a plugin activation that points at a
-    /// different Herdr socket moves the companion there.
     func refresh() {
         guard running else { return start() }
         let path = socketPath()
@@ -66,31 +63,50 @@ final class HerdrConnection {
         guard running, lifecycle == nil else { return }
         let path = socketPath()
         currentPath = path
+        lifecycle = openArmedSubscription(
+            [.paneClosed, .paneExited, .paneMoved, .paneAgentDetected],
+            at: path,
+            onArmed: { [weak self] in self?.bootstrap() },
+            onRejected: { [weak self] in self?.fail() },
+            onClose: { [weak self] in self?.fail() }
+        )
+    }
+
+    /// Herdr replays recent events right after acknowledging a subscription,
+    /// so events only count once the ack has been followed by a quiet spell.
+    private func openArmedSubscription(
+        _ subscriptions: [HerdrSubscription],
+        at path: String,
+        onArmed: @escaping () -> Void,
+        onRejected: @escaping () -> Void,
+        onClose: @escaping () -> Void
+    ) -> HerdrSubscriptionHandle {
         var armed = false
-        lifecycle = transport.subscribe(
-            HerdrRequest.subscribe([.paneClosed, .paneExited, .paneMoved, .paneAgentDetected]).line(id: requestID()),
+        return transport.subscribe(
+            HerdrRequest.subscribe(subscriptions).line(id: requestID()),
             socketPath: path,
             onLine: { [weak self] line in
                 guard let self else { return }
                 if let event = HerdrEvent(line: line) {
                     if armed { handle(event) }
                 } else if isAcknowledgement(line) {
-                    schedule(after: Self.flushDelay) { [weak self] in
+                    schedule(after: Self.flushDelay) {
                         armed = true
-                        self?.bootstrap()
+                        onArmed()
                     }
                 } else {
-                    fail()
+                    onRejected()
                 }
             },
-            onClose: { [weak self] _ in self?.fail() }
+            onClose: { _ in onClose() }
         )
     }
 
     private func bootstrap() {
         guard let path = currentPath, running else { return }
+        let generation = generation
         transport.request(HerdrRequest.snapshot.line(id: requestID()), socketPath: path) { [weak self] result in
-            guard let self, running else { return }
+            guard let self, running, generation == self.generation else { return }
             guard let snapshot = try? Self.decodeSnapshot(result) else { return fail() }
             let records = snapshot.sessions
             known = Dictionary(records.map { ($0.identity.paneID, $0) }, uniquingKeysWith: { _, last in last })
@@ -111,14 +127,18 @@ final class HerdrConnection {
                 return
             }
             if let agent, agent != record.identity.agent {
-                scheduleReconcile()
+                return scheduleReconcile()
             }
             known[paneID]?.status = status.sessionStatus
             onEvent?(.statusChanged(paneID: paneID, status: status.sessionStatus))
 
         case .agentDetected(let paneID, _, let released):
-            guard !released, known[paneID] == nil else { return }
-            ensureStatusSubscription(for: paneID)
+            if known[paneID] == nil {
+                guard !released else { return }
+                ensureStatusSubscription(for: paneID)
+            } else if !released {
+                return
+            }
             scheduleReconcile()
 
         case .paneRemoved(let paneID):
@@ -141,24 +161,12 @@ final class HerdrConnection {
 
     private func ensureStatusSubscription(for paneID: String) {
         guard let path = currentPath, statusSubscriptions[paneID] == nil else { return }
-        var armed = false
-        statusSubscriptions[paneID] = transport.subscribe(
-            HerdrRequest.subscribe([.agentStatus(paneID: paneID)]).line(id: requestID()),
-            socketPath: path,
-            onLine: { [weak self] line in
-                guard let self else { return }
-                if let event = HerdrEvent(line: line) {
-                    if armed { handle(event) }
-                } else if isAcknowledgement(line) {
-                    schedule(after: Self.flushDelay) { [weak self] in
-                        armed = true
-                        self?.scheduleReconcile()
-                    }
-                } else {
-                    statusSubscriptions.removeValue(forKey: paneID)?.cancel()
-                }
-            },
-            onClose: { [weak self] _ in
+        statusSubscriptions[paneID] = openArmedSubscription(
+            [.agentStatus(paneID: paneID)],
+            at: path,
+            onArmed: { [weak self] in self?.scheduleReconcile() },
+            onRejected: { [weak self] in self?.statusSubscriptions.removeValue(forKey: paneID)?.cancel() },
+            onClose: { [weak self] in
                 guard let self else { return }
                 statusSubscriptions.removeValue(forKey: paneID)
                 if live, known[paneID] != nil { scheduleReconcile() }
@@ -181,8 +189,9 @@ final class HerdrConnection {
             return
         }
         snapshotInFlight = true
+        let generation = generation
         transport.request(HerdrRequest.snapshot.line(id: requestID()), socketPath: path) { [weak self] result in
-            guard let self else { return }
+            guard let self, generation == self.generation else { return }
             snapshotInFlight = false
             guard live else { return }
             guard let snapshot = try? Self.decodeSnapshot(result) else { return fail() }
@@ -224,6 +233,7 @@ final class HerdrConnection {
     }
 
     private func tearDown() {
+        generation += 1
         lifecycle?.cancel()
         lifecycle = nil
         statusSubscriptions.values.forEach { $0.cancel() }

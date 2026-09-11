@@ -1,14 +1,14 @@
 import Foundation
 
-/// Turns session activity into what Claudey shows. A completion hop is only
-/// acknowledged when nothing more important is on screen.
 final class CompanionDirector {
     private let model = ActivityModel()
     private let behavior: CompanionBehavior
-    private var shown: CompanionAnimation?
+    private var shown: CompanionAnimation
 
-    init(behavior: CompanionBehavior) {
+    init(behavior: CompanionBehavior, startedAt now: TimeInterval) {
         self.behavior = behavior
+        shown = model.state
+        behavior.show(shown, at: now)
     }
 
     var sessions: [SessionRecord] { model.sessions }

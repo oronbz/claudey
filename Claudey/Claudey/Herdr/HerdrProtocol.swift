@@ -7,6 +7,10 @@ enum HerdrAgentStatus: String, Decodable, Sendable {
     case done
     case unknown
 
+    init(from decoder: Decoder) throws {
+        self = HerdrAgentStatus(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown
+    }
+
     var sessionStatus: SessionStatus {
         switch self {
         case .working: .working
@@ -29,7 +33,6 @@ struct HerdrAgentRecord: Decodable, Equatable, Sendable {
     let agent: String?
     let agentStatus: HerdrAgentStatus
     let agentSession: Session?
-    let stateChangeSeq: UInt64?
 
     private enum CodingKeys: String, CodingKey {
         case paneID = "pane_id"
@@ -39,7 +42,6 @@ struct HerdrAgentRecord: Decodable, Equatable, Sendable {
         case agent
         case agentStatus = "agent_status"
         case agentSession = "agent_session"
-        case stateChangeSeq = "state_change_seq"
     }
 
     var sessionRecord: SessionRecord? {
@@ -53,22 +55,13 @@ struct HerdrAgentRecord: Decodable, Equatable, Sendable {
                 agent: agent,
                 agentSession: agentSession?.value
             ),
-            status: agentStatus.sessionStatus,
-            changeOrder: stateChangeSeq ?? 0
+            status: agentStatus.sessionStatus
         )
     }
 }
 
 struct HerdrSnapshot: Decodable, Sendable {
-    let version: String
-    let protocolVersion: UInt32
     let agents: [HerdrAgentRecord]
-
-    private enum CodingKeys: String, CodingKey {
-        case version
-        case protocolVersion = "protocol"
-        case agents
-    }
 
     var sessions: [SessionRecord] {
         agents.compactMap(\.sessionRecord)
@@ -135,9 +128,6 @@ enum HerdrRequest {
     }
 }
 
-/// One newline-delimited line pushed by Herdr, reduced to what the companion
-/// reacts to. Anything else is decoded as `.other` so unknown events and
-/// fields never break the stream.
 enum HerdrEvent: Equatable, Sendable {
     case agentStatusChanged(paneID: String, agent: String?, status: HerdrAgentStatus)
     case agentDetected(paneID: String, agent: String?, released: Bool)

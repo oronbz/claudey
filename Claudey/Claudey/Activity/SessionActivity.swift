@@ -22,7 +22,6 @@ enum SessionStatus: Equatable, Sendable {
 struct SessionRecord: Equatable, Sendable {
     let identity: SessionIdentity
     var status: SessionStatus
-    var changeOrder: UInt64
 }
 
 enum ActivityEvent: Equatable, Sendable {

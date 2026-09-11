@@ -14,8 +14,9 @@ final class CompanionController {
 
     init(catalog: AnimationCatalog, sheet: SpriteSheet, positions: CompanionPositionStore = CompanionPositionStore()) {
         self.positions = positions
-        behavior = CompanionBehavior(catalog: catalog, startedAt: ProcessInfo.processInfo.systemUptime)
-        director = CompanionDirector(behavior: behavior)
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        behavior = CompanionBehavior(catalog: catalog, startedAt: startedAt)
+        director = CompanionDirector(behavior: behavior, startedAt: startedAt)
 
         let size = catalog.desktopSize
         panel = CompanionPanel(size: size)

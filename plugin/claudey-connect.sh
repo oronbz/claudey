@@ -5,7 +5,6 @@
 set -euo pipefail
 
 socket_path="${HERDR_SOCKET_PATH:-$HOME/.config/herdr/herdr.sock}"
-bin_path="${HERDR_BIN_PATH:-herdr}"
 support_dir="$HOME/Library/Application Support/Claudey"
 context_file="$support_dir/herdr-connection.json"
 
@@ -15,10 +14,7 @@ json_string() {
 
 mkdir -p "$support_dir"
 tmp_file="$(mktemp "$support_dir/.herdr-connection.XXXXXX")"
-printf '{"socket_path":%s,"bin_path":%s,"written_at":%s}\n' \
-  "$(json_string "$socket_path")" \
-  "$(json_string "$bin_path")" \
-  "$(date +%s)" > "$tmp_file"
+printf '{"socket_path":%s}\n' "$(json_string "$socket_path")" > "$tmp_file"
 mv -f "$tmp_file" "$context_file"
 
 app_path="${CLAUDEY_APP:-}"

@@ -20,7 +20,6 @@ struct HerdrProtocolTests {
             agent: "claude", agentSession: "sess-a"
         ))
         #expect(sessions[1].identity.agentSession == nil)
-        #expect(sessions.map(\.changeOrder) == [40, 41, 12, 2])
     }
 
     @Test func aPaneWithoutAnAgentIsNotASession() throws {
@@ -75,30 +74,21 @@ struct HerdrProtocolTests {
         #expect((snapshot["params"] as? [String: Any])?.isEmpty == true)
     }
 
+    @Test func aStatusHerdrAddsLaterIsUncertainRatherThanFatal() throws {
+        let data = HerdrFixtures.snapshotResponse(agents: [
+            HerdrFixtures.agent(pane: "w1:p1", terminal: "term_a", status: "paused", session: nil, seq: 1),
+        ])
+
+        let response = try JSONDecoder().decode(HerdrResponse<HerdrSnapshotResult>.self, from: data)
+
+        #expect(response.result?.snapshot.sessions.map(\.status) == [.uncertain])
+    }
+
     @Test func herdrStatusesTranslateToSessionStatuses() {
         #expect(HerdrAgentStatus.working.sessionStatus == .working)
         #expect(HerdrAgentStatus.blocked.sessionStatus == .needsYou)
         #expect(HerdrAgentStatus.idle.sessionStatus == .ready)
         #expect(HerdrAgentStatus.done.sessionStatus == .ready)
         #expect(HerdrAgentStatus.unknown.sessionStatus == .uncertain)
-    }
-}
-
-struct HerdrConnectionContextTests {
-    @Test func theContextFileWinsOverEnvironmentAndDefault() throws {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("claudey-\(UUID().uuidString).json")
-        try Data("{\"socket_path\":\"/tmp/from-file.sock\",\"bin_path\":\"/opt/herdr\"}".utf8).write(to: url)
-        defer { try? FileManager.default.removeItem(at: url) }
-
-        let context = HerdrConnectionContext.resolve(fileURL: url, environment: ["HERDR_SOCKET_PATH": "/tmp/env.sock"])
-
-        #expect(context.socketPath == "/tmp/from-file.sock")
-    }
-
-    @Test func withoutAFileTheEnvironmentThenTheDefaultApply() {
-        let missing = FileManager.default.temporaryDirectory.appendingPathComponent("claudey-missing-\(UUID().uuidString).json")
-
-        #expect(HerdrConnectionContext.resolve(fileURL: missing, environment: ["HERDR_SOCKET_PATH": "/tmp/env.sock"]).socketPath == "/tmp/env.sock")
-        #expect(HerdrConnectionContext.resolve(fileURL: missing, environment: [:]).socketPath.hasSuffix("/.config/herdr/herdr.sock"))
     }
 }

@@ -61,8 +61,9 @@ occupant in the same pane.
   taken after that. A one-second, coalesced reconcile snapshot runs whenever a
   subscription arms, an agent is detected in an unknown pane, or a pane moves.
 - `pane_agent_detected` toggles `released` at roughly 10 Hz while an agent runs
-  a subprocess. Detection on a known pane is ignored; only a first sighting
-  opens a status subscription.
+  a subprocess. A first sighting opens a status subscription; a release on a
+  known pane only schedules the coalesced reconcile, which is also how an agent
+  that exits and leaves its shell behind is forgotten.
 - `done` is reported when a background tab finishes unseen; focusing the tab
   turns it into `idle` without another transition of interest.
 
@@ -73,6 +74,8 @@ occupant in the same pane.
   question; he never invents one.
 - A status change that happens inside the 300 ms arming window of a fresh
   subscription is caught by the reconcile snapshot about a second later.
+- A status event naming a different agent than the pane's known occupant is
+  not applied; it triggers a reconcile, so a replacement never inherits a hop.
 - Herdr's `agent_session` can briefly point at a different Claude session file
   while a tool subprocess runs. A reconcile at that instant resets the pane's
   baseline, which can swallow one hop but never adds a false one.

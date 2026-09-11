@@ -11,7 +11,6 @@ struct ActivityUpdate: Equatable {
 final class ActivityModel {
     private(set) var sessions: [SessionRecord] = []
     private(set) var isConnected = false
-    private var nextOrder: UInt64 = 0
 
     func apply(_ event: ActivityEvent) -> ActivityUpdate {
         var finished: [SessionIdentity] = []
@@ -20,7 +19,6 @@ final class ActivityModel {
         case .connected(let records):
             isConnected = true
             sessions = records
-            nextOrder = (records.map(\.changeOrder).max() ?? 0) + 1
 
         case .disconnected:
             isConnected = false
@@ -28,14 +26,13 @@ final class ActivityModel {
 
         case .sessionAppeared(let record):
             sessions.removeAll { $0.identity.paneID == record.identity.paneID }
-            sessions.append(SessionRecord(identity: record.identity, status: record.status, changeOrder: claimOrder()))
+            sessions.append(record)
 
         case .statusChanged(let paneID, let status):
             guard let index = sessions.firstIndex(where: { $0.identity.paneID == paneID }) else { break }
             let previous = sessions[index].status
             guard previous != status else { break }
             sessions[index].status = status
-            sessions[index].changeOrder = claimOrder()
             if previous == .working, status == .ready {
                 finished.append(sessions[index].identity)
             }
@@ -54,10 +51,5 @@ final class ActivityModel {
         if statuses.contains(.working) { return .working }
         if statuses.contains(.ready) { return .idle }
         return .resting
-    }
-
-    private func claimOrder() -> UInt64 {
-        defer { nextOrder += 1 }
-        return nextOrder
     }
 }
