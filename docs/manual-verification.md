@@ -52,7 +52,7 @@ logs each `Claudey activity:` event in a debug build.
 - [x] A second copy launched while one is running quits itself immediately.
 - [ ] Stopping the Herdr server puts him to rest; starting it again reconnects
       him within a few seconds without a hop.
-- [ ] Typing in another app is undisturbed while a status change arrives.
+- [x] Typing in another app is undisturbed while a status change arrives.
 
 ## Silence
 
