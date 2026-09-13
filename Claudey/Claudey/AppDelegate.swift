@@ -16,6 +16,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var companion: CompanionController?
     private var menu: CompanionMenuController?
     private var herdr: HerdrConnection?
+    #if DEBUG
+    private var clickSignal: DispatchSourceSignal?
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -29,9 +32,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             let catalog = try AnimationCatalog.bundled()
             let companion = CompanionController(catalog: catalog, sheet: try SpriteSheet.bundled(catalog: catalog))
-            #if DEBUG
-            companion.onClick = { NSLog("Claudey was clicked") }
-            #endif
             let menu = CompanionMenuController(companion: companion)
             companion.attach(menu.menu)
             companion.show()
@@ -48,6 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 #endif
                 companion?.apply(event)
             }
+            companion.navigate(through: HerdrNavigationHost(herdr: herdr, ghostty: GhosttyHost()))
+            #if DEBUG
+            listenForScriptedClicks()
+            #endif
             herdr.start()
             self.herdr = herdr
         } catch {
@@ -66,6 +70,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         true
     }
+
+    #if DEBUG
+    /// `kill -USR1 $(pgrep -x Claudey)` clicks him from a script.
+    private func listenForScriptedClicks() {
+        signal(SIGUSR1, SIG_IGN)
+        let source = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
+        source.setEventHandler { [weak self] in
+            self?.companion?.click()
+        }
+        source.resume()
+        clickSignal = source
+    }
+    #endif
 
     /// The test host must neither yield to a developer's running copy nor
     /// talk to the real Herdr socket.

@@ -383,4 +383,40 @@ struct HerdrConnectionTests {
         #expect(harness.transport.subscriptions.allSatisfy { $0.isCancelled })
         #expect(harness.transport.liveLifecycle == nil)
     }
+
+    @Test func focusingAPaneAsksHerdrForExactlyThatPane() throws {
+        let harness = try Harness()
+        try harness.goLive(agents: [working])
+        var outcomes: [Bool] = []
+
+        harness.connection.focusPane("w1:p1") { outcomes.append($0) }
+
+        let request = try #require(harness.transport.requests.last)
+        #expect(request.method == "pane.focus")
+        #expect(request.params["pane_id"] as? String == "w1:p1")
+        harness.transport.answerLastRequest(with: HerdrFixtures.paneFocused(id: request.id, pane: "w1:p1"))
+        #expect(outcomes == [true])
+    }
+
+    @Test func aPaneHerdrNoLongerKnowsCannotBeFocused() throws {
+        let harness = try Harness()
+        try harness.goLive(agents: [working])
+        var outcomes: [Bool] = []
+
+        harness.connection.focusPane("w1:p1") { outcomes.append($0) }
+
+        let request = try #require(harness.transport.requests.last)
+        harness.transport.answerLastRequest(with: HerdrFixtures.error(id: request.id, code: "pane_not_found", message: "pane w1:p1 not found"))
+        #expect(outcomes == [false])
+    }
+
+    @Test func focusingWithoutAConnectionFailsWithoutAsking() throws {
+        let harness = try Harness()
+        var outcomes: [Bool] = []
+
+        harness.connection.focusPane("w1:p1") { outcomes.append($0) }
+
+        #expect(outcomes == [false])
+        #expect(harness.transport.requests.isEmpty)
+    }
 }

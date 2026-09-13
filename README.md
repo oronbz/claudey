@@ -10,7 +10,8 @@ The macOS companion runs locally: he floats above ordinary windows, breathes and
 blinks, reacts to hovering, remembers where he is dragged, and quits from his
 own right-click menu. Connected to Herdr, he concentrates while an agent works,
 hops once when a response ends, and waves then holds a questioning pose while
-an agent waits for you. Clicking him does not navigate yet (issue 04).
+an agent waits for you. Clicking him takes you to the Herdr pane behind his
+reaction and brings its Ghostty terminal forward.
 
 ## Running him
 

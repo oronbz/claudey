@@ -83,6 +83,15 @@ struct HerdrSnapshotResult: Decodable, Sendable {
     let snapshot: HerdrSnapshot
 }
 
+struct HerdrPaneInfoResult: Decodable, Sendable {
+    struct Pane: Decodable, Sendable {
+        let paneID: String
+        private enum CodingKeys: String, CodingKey { case paneID = "pane_id" }
+    }
+
+    let pane: Pane
+}
+
 struct HerdrAcknowledgement: Decodable, Sendable {
     let type: String
 }
@@ -108,18 +117,22 @@ enum HerdrSubscription: Equatable, Sendable {
 enum HerdrRequest {
     case snapshot
     case subscribe([HerdrSubscription])
+    case focusPane(paneID: String)
 
     var method: String {
         switch self {
         case .snapshot: "session.snapshot"
         case .subscribe: "events.subscribe"
+        case .focusPane: "pane.focus"
         }
     }
 
     func line(id: String) -> Data {
         var params: [String: Any] = [:]
-        if case .subscribe(let subscriptions) = self {
-            params["subscriptions"] = subscriptions.map(\.json)
+        switch self {
+        case .snapshot: break
+        case .subscribe(let subscriptions): params["subscriptions"] = subscriptions.map(\.json)
+        case .focusPane(let paneID): params["pane_id"] = paneID
         }
         let body: [String: Any] = ["id": id, "method": method, "params": params]
         var data = try! JSONSerialization.data(withJSONObject: body)

@@ -33,6 +33,15 @@ enum HerdrFixtures {
         Data("{\"id\":\"\(id)\",\"result\":{\"type\":\"subscription_started\"}}".utf8)
     }
 
+    static func paneFocused(id: String, pane: String) -> Data {
+        Data("""
+        {"id":"\(id)","result":{"pane":{"agent_status":"unknown","cwd":"/Users/me/project","focused":true,
+         "foreground_cwd":"/Users/me/project","pane_id":"\(pane)","revision":0,
+         "scroll":{"max_offset_from_bottom":0,"offset_from_bottom":0,"viewport_rows":53},
+         "tab_id":"w1:t1","terminal_id":"term_a","workspace_id":"w1"},"type":"pane_info"}}
+        """.utf8)
+    }
+
     static func error(id: String, code: String, message: String) -> Data {
         Data("{\"id\":\"\(id)\",\"error\":{\"code\":\"\(code)\",\"message\":\"\(message)\"}}".utf8)
     }

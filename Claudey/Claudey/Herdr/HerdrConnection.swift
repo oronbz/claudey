@@ -59,6 +59,17 @@ final class HerdrConnection {
         }
     }
 
+    /// Asks Herdr to focus one pane, switching its workspace and tab. Herdr
+    /// validates the pane itself, so a closed pane answers `pane_not_found`
+    /// rather than focusing anything else.
+    func focusPane(_ paneID: String, completion: @escaping (Bool) -> Void) {
+        guard live, let path = currentPath else { return completion(false) }
+        transport.request(HerdrRequest.focusPane(paneID: paneID).line(id: requestID()), socketPath: path) { result in
+            let response = try? JSONDecoder().decode(HerdrResponse<HerdrPaneInfoResult>.self, from: try result.get())
+            completion(response?.error == nil && response?.result?.pane.paneID == paneID)
+        }
+    }
+
     private func connect() {
         guard running, lifecycle == nil else { return }
         let path = socketPath()
@@ -107,7 +118,7 @@ final class HerdrConnection {
         let generation = generation
         transport.request(HerdrRequest.snapshot.line(id: requestID()), socketPath: path) { [weak self] result in
             guard let self, running, generation == self.generation else { return }
-            guard let snapshot = try? Self.decodeSnapshot(result) else { return fail() }
+            guard let snapshot = Self.snapshot(from: result, during: "bootstrap") else { return fail() }
             let records = snapshot.sessions
             known = Dictionary(records.map { ($0.identity.paneID, $0) }, uniquingKeysWith: { _, last in last })
             live = true
@@ -194,7 +205,7 @@ final class HerdrConnection {
             guard let self, generation == self.generation else { return }
             snapshotInFlight = false
             guard live else { return }
-            guard let snapshot = try? Self.decodeSnapshot(result) else { return fail() }
+            guard let snapshot = Self.snapshot(from: result, during: "reconcile") else { return fail() }
             apply(snapshot.sessions)
         }
     }
@@ -265,6 +276,15 @@ final class HerdrConnection {
     private func requestID() -> String {
         nextRequestID += 1
         return "claudey-\(nextRequestID)"
+    }
+
+    private static func snapshot(from result: Result<Data, Error>, during phase: String) -> HerdrSnapshot? {
+        do {
+            return try decodeSnapshot(result)
+        } catch {
+            NSLog("Claudey could not read Herdr's %@ snapshot: %@", phase, String(describing: error))
+            return nil
+        }
     }
 
     private static func decodeSnapshot(_ result: Result<Data, Error>) throws -> HerdrSnapshot {

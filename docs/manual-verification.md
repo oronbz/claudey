@@ -24,8 +24,8 @@ right-clicking him opens his menu.
 - [x] Hovering plays the happy reaction; leaving restores the previous reaction.
       A completion hop caught mid-air by a hover resumes instead of being lost.
 - [x] He keeps animating while being dragged and while his menu is open.
-- [x] Dragging moves him; a click at the end of a drag logs nothing. A plain
-      click logs "Claudey was clicked" in a debug build — navigation is issue 04.
+- [x] Dragging moves him; a click at the end of a drag navigates nowhere. A
+      plain click navigates (see Click to session below).
 - [x] Quitting and relaunching restores his dragged position.
 - [ ] Disconnecting a display that held him brings him back into view.
 
@@ -53,6 +53,35 @@ logs each `Claudey activity:` event in a debug build.
 - [ ] Stopping the Herdr server puts him to rest; starting it again reconnects
       him within a few seconds without a hop.
 - [x] Typing in another app is undisturbed while a status change arrives.
+
+## Click to session (issue 04)
+
+Verified 2026-09-14 in Ghostty 1.3.2 + Herdr 0.8.2 with a Claude Code session
+in a split pane, the click delivered through the real event path; the Xcode
+console logs each result as `Claudey navigation:`.
+
+- [x] An ordinary click while one session works moves Herdr's focus to that
+      pane from another workspace; the log reads `focusedPane("w2H:p7")`.
+- [x] With Chrome in front and a session needing you in another workspace,
+      clicking him selects exactly that pane and brings Ghostty forward; the
+      log names the Ghostty terminal (pid of the Herdr client, its tty) and
+      `focused: true`.
+- [x] Closing the demo pane afterwards returns him to the aggregate state; no
+      focus change happens without a click.
+- [x] A pane that closes before the click cannot be staged by hand: Herdr's
+      `pane_closed` reaches Claudey within milliseconds. Its safe failure is
+      Herdr's own `pane_not_found` answer (probed live against the socket) plus
+      the fixture test that turns it into host activation only.
+- [ ] Hover, drag and status changes never move focus (covered by tests; watch
+      the log for an absent `Claudey navigation:` while hovering and dragging).
+- [ ] Clicking during the completion hop opens the session that just
+      finished, even while another one keeps working.
+- [ ] With Ghostty's Automation permission revoked for Claudey (System
+      Settings → Privacy & Security → Automation), a click still moves Herdr's
+      focus and brings Ghostty forward, animations keep running, and the
+      prompt does not reappear during the run.
+- [ ] With no Herdr client inside Ghostty, a click plays the happy reaction
+      once and nothing else.
 
 ## Silence
 

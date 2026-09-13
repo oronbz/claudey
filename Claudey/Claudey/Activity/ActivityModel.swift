@@ -11,34 +11,42 @@ struct ActivityUpdate: Equatable {
 final class ActivityModel {
     private(set) var sessions: [SessionRecord] = []
     private(set) var isConnected = false
+    private var lastChange: [String: Int] = [:]
+    private var sequence = 0
 
     func apply(_ event: ActivityEvent) -> ActivityUpdate {
         var finished: [SessionIdentity] = []
+        sequence += 1
 
         switch event {
         case .connected(let records):
             isConnected = true
             sessions = records
+            lastChange = Dictionary(records.map { ($0.identity.paneID, sequence) }, uniquingKeysWith: { _, last in last })
 
         case .disconnected:
             isConnected = false
             sessions = []
+            lastChange = [:]
 
         case .sessionAppeared(let record):
             sessions.removeAll { $0.identity.paneID == record.identity.paneID }
             sessions.append(record)
+            lastChange[record.identity.paneID] = sequence
 
         case .statusChanged(let paneID, let status):
             guard let index = sessions.firstIndex(where: { $0.identity.paneID == paneID }) else { break }
             let previous = sessions[index].status
             guard previous != status else { break }
             sessions[index].status = status
+            lastChange[paneID] = sequence
             if previous == .working, status == .ready {
                 finished.append(sessions[index].identity)
             }
 
         case .sessionRemoved(let paneID):
             sessions.removeAll { $0.identity.paneID == paneID }
+            lastChange.removeValue(forKey: paneID)
         }
 
         return ActivityUpdate(state: state, finished: finished)
@@ -51,5 +59,33 @@ final class ActivityModel {
         if statuses.contains(.working) { return .working }
         if statuses.contains(.ready) { return .idle }
         return .resting
+    }
+
+    /// A celebrated session that has since closed or changed occupant yields
+    /// nil rather than the next best session.
+    func navigationTarget(celebrating: SessionIdentity?) -> SessionIdentity? {
+        guard isConnected else { return nil }
+
+        if let waiting = mostRecent(sessions.filter { $0.status == .needsYou }) {
+            return waiting.identity
+        }
+        if let celebrating {
+            return sessions.contains { $0.identity == celebrating } ? celebrating : nil
+        }
+        return mostRecent(sessions)?.identity
+    }
+
+    private func mostRecent(_ candidates: [SessionRecord]) -> SessionRecord? {
+        candidates.max { rank($0) < rank($1) }
+    }
+
+    private func rank(_ record: SessionRecord) -> (Int, Int) {
+        let liveliness: Int = switch record.status {
+        case .needsYou: 3
+        case .working: 2
+        case .ready: 1
+        case .uncertain: 0
+        }
+        return (lastChange[record.identity.paneID] ?? 0, liveliness)
     }
 }

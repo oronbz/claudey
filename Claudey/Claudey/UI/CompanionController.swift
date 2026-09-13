@@ -1,10 +1,9 @@
 import AppKit
 
 final class CompanionController {
-    var onClick: (() -> Void)?
-
     private let behavior: CompanionBehavior
     private let director: CompanionDirector
+    private var navigator: ClickNavigator?
     private let panel: CompanionPanel
     private let spriteView: SpriteView
     private let positions: CompanionPositionStore
@@ -35,7 +34,7 @@ final class CompanionController {
             self?.positions.savedOrigin = self?.panel.frame.origin
         }
         spriteView.onClick = { [weak self] in
-            self?.onClick?()
+            self?.click()
         }
 
         panel.setFrameOrigin(
@@ -67,6 +66,21 @@ final class CompanionController {
     func apply(_ event: ActivityEvent) {
         director.apply(event, at: now)
         render()
+    }
+
+    func navigate(through host: NavigationHost) {
+        let navigator = ClickNavigator(director: director, host: host)
+        navigator.onOutcome = { [weak self] outcome in
+            #if DEBUG
+            NSLog("Claudey navigation: \(outcome)")
+            #endif
+            self?.render()
+        }
+        self.navigator = navigator
+    }
+
+    func click() {
+        navigator?.click(at: now)
     }
 
     private func render() {

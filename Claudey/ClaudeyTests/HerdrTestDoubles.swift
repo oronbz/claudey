@@ -33,6 +33,7 @@ final class FakeHerdrTransport: HerdrTransport {
         let id: String
         let method: String
         let socketPath: String
+        let params: [String: Any]
         let completion: @MainActor (Result<Data, Error>) -> Void
     }
 
@@ -54,7 +55,10 @@ final class FakeHerdrTransport: HerdrTransport {
 
     func request(_ line: Data, socketPath: String, completion: @escaping @MainActor (Result<Data, Error>) -> Void) {
         let body = try! JSONSerialization.jsonObject(with: line) as! [String: Any]
-        requests.append(Request(id: body["id"] as! String, method: body["method"] as! String, socketPath: socketPath, completion: completion))
+        requests.append(Request(
+            id: body["id"] as! String, method: body["method"] as! String, socketPath: socketPath,
+            params: body["params"] as? [String: Any] ?? [:], completion: completion
+        ))
     }
 
     func subscribe(_ line: Data, socketPath: String,
@@ -77,6 +81,10 @@ final class FakeHerdrTransport: HerdrTransport {
         let request = requests.removeLast()
         precondition(request.method == "session.snapshot")
         request.completion(.success(HerdrFixtures.snapshotResponse(id: request.id, agents: agents)))
+    }
+
+    func answerLastRequest(with line: Data) {
+        requests.removeLast().completion(.success(line))
     }
 
     func failSnapshot() {

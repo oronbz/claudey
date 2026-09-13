@@ -41,6 +41,21 @@ final class CompanionBehavior {
         }
     }
 
+    func reactPlayfully(at now: TimeInterval) {
+        guard let hover = catalog.timeline(for: .hover) else { return }
+        let once = AnimationTimeline(playback: .once, steps: hover.steps)
+        transient = Playing(animation: .hover, timeline: once, startedAt: now)
+        hovering?.startedAt = now
+    }
+
+    /// Ignores the hover reaction, which is what a click usually arrives through.
+    func isPlaying(_ animation: CompanionAnimation, at now: TimeInterval) -> Bool {
+        if let transient, !transient.timeline.hasCompleted(at: now - transient.startedAt) {
+            return transient.animation == animation
+        }
+        return base.animation == animation
+    }
+
     func setHovering(_ isHovering: Bool, at now: TimeInterval) {
         guard isHovering else {
             hovering = nil
