@@ -419,4 +419,73 @@ struct HerdrConnectionTests {
         #expect(outcomes == [false])
         #expect(harness.transport.requests.isEmpty)
     }
+
+    @Test func reconnectingWithTwoSessionsResumesThemAndOnlyLaterTransitionsHop() throws {
+        let harness = try Harness()
+        try harness.goLive(agents: [working, codexWorking])
+        harness.armStatusSubscriptions()
+        harness.settle(agents: [working, codexWorking])
+
+        try #require(harness.transport.liveLifecycle).close(HerdrTransportError.unreachable("server stopped"))
+        #expect(harness.animation == .resting)
+
+        harness.scheduler.advance(by: HerdrConnection.initialRetryDelay)
+        let lifecycle = try #require(harness.transport.liveLifecycle)
+        lifecycle.acknowledge()
+        harness.scheduler.advance(by: HerdrConnection.flushDelay)
+        let codexBlocked = HerdrFixtures.agent(pane: "w1:p2", terminal: "term_b", agent: "codex", status: "blocked", session: "sess-b", seq: 43)
+        harness.transport.answerSnapshot(with: [ready, codexBlocked])
+
+        #expect(harness.animation == .needsYou)
+        #expect(harness.director.clickTarget(at: harness.scheduler.now)?.paneID == "w1:p2")
+        #expect(harness.transport.statusSubscription(for: "w1:p1") != nil)
+        #expect(harness.transport.statusSubscription(for: "w1:p2") != nil)
+
+        harness.armStatusSubscriptions()
+        harness.settle(agents: [ready, codexBlocked])
+        try #require(harness.transport.statusSubscription(for: "w1:p2")).push(HerdrFixtures.statusChanged(pane: "w1:p2", agent: "codex", status: "working"))
+        #expect(harness.animation == .working)
+        try #require(harness.transport.statusSubscription(for: "w1:p2")).push(HerdrFixtures.statusChanged(pane: "w1:p2", agent: "codex", status: "idle"))
+        #expect(harness.animation == .finished)
+        #expect(harness.director.clickTarget(at: harness.scheduler.now)?.paneID == "w1:p2")
+    }
+
+    @Test func linesFromTheLostConnectionChangeNothingAfterReconnecting() throws {
+        let harness = try Harness()
+        try harness.goLive(agents: [working])
+        harness.armStatusSubscriptions()
+        harness.settle(agents: [working])
+        let stale = try #require(harness.transport.statusSubscription(for: "w1:p1"))
+        let staleLifecycle = try #require(harness.transport.liveLifecycle)
+
+        staleLifecycle.close(HerdrTransportError.unreachable("server stopped"))
+        harness.scheduler.advance(by: HerdrConnection.initialRetryDelay)
+        try #require(harness.transport.liveLifecycle).acknowledge()
+        harness.scheduler.advance(by: HerdrConnection.flushDelay)
+        harness.transport.answerSnapshot(with: [working])
+        let eventsBefore = harness.events.count
+
+        stale.push(HerdrFixtures.statusChanged(pane: "w1:p1", status: "idle"))
+        staleLifecycle.push(HerdrFixtures.paneClosed(pane: "w1:p1"))
+        staleLifecycle.close(nil)
+
+        #expect(harness.events.count == eventsBefore)
+        #expect(harness.animation == .working)
+        #expect(harness.transport.liveLifecycle != nil)
+    }
+
+    @Test func aSecondQuestionKeepsTheClickOnTheFirstUntilItIsAnswered() throws {
+        let harness = try Harness()
+        try harness.goLive(agents: [working, codexWorking])
+        harness.armStatusSubscriptions()
+        harness.settle(agents: [working, codexWorking])
+
+        try #require(harness.transport.statusSubscription(for: "w1:p2")).push(HerdrFixtures.statusChanged(pane: "w1:p2", agent: "codex", status: "blocked"))
+        try #require(harness.transport.statusSubscription(for: "w1:p1")).push(HerdrFixtures.statusChanged(pane: "w1:p1", status: "blocked"))
+        #expect(harness.director.clickTarget(at: harness.scheduler.now)?.paneID == "w1:p2")
+
+        try #require(harness.transport.statusSubscription(for: "w1:p2")).push(HerdrFixtures.statusChanged(pane: "w1:p2", agent: "codex", status: "working"))
+        #expect(harness.animation == .needsYou)
+        #expect(harness.director.clickTarget(at: harness.scheduler.now)?.paneID == "w1:p1")
+    }
 }

@@ -93,11 +93,12 @@ final class HerdrConnection {
         onClose: @escaping () -> Void
     ) -> HerdrSubscriptionHandle {
         var armed = false
+        let generation = generation
         return transport.subscribe(
             HerdrRequest.subscribe(subscriptions).line(id: requestID()),
             socketPath: path,
             onLine: { [weak self] line in
-                guard let self else { return }
+                guard let self, generation == self.generation else { return }
                 if let event = HerdrEvent(line: line) {
                     if armed { handle(event) }
                 } else if isAcknowledgement(line) {
@@ -109,7 +110,10 @@ final class HerdrConnection {
                     onRejected()
                 }
             },
-            onClose: { _ in onClose() }
+            onClose: { [weak self] _ in
+                guard let self, generation == self.generation else { return }
+                onClose()
+            }
         )
     }
 

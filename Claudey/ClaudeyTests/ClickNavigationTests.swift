@@ -76,18 +76,21 @@ struct ClickNavigationTests {
         #expect(harness.host.focusedPanes == [codex.paneID])
     }
 
-    @Test func theMostRecentlyAskedQuestionWinsAmongSeveral() throws {
+    @Test func theMostRecentlyAskedRemainingQuestionWinsOnceThePinnedOneIsAnswered() throws {
         let harness = try Harness()
         harness.connected([
             .init(identity: claude, status: .working),
             .init(identity: codex, status: .working),
+            .init(identity: sibling, status: .working),
         ])
         harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
         harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+        harness.director.apply(.statusChanged(paneID: sibling.paneID, status: .needsYou), at: 3)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .working), at: 4)
 
-        harness.navigator.click(at: 3)
+        harness.navigator.click(at: 5)
 
-        #expect(harness.host.focusedPanes == [claude.paneID])
+        #expect(harness.host.focusedPanes == [sibling.paneID])
     }
 
     @Test func clickingTheHopOpensTheSessionThatJustFinished() throws {
@@ -238,5 +241,136 @@ struct ClickNavigationTests {
         harness.navigator.click(at: 2)
 
         #expect(harness.host.focusedPanes.isEmpty)
+    }
+
+    @Test func aSecondQuestionMidPoseKeepsTheClickOnTheFirst() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+
+        harness.navigator.click(at: 3)
+
+        #expect(harness.host.focusedPanes == [codex.paneID])
+    }
+
+    @Test func aRepeatedQuestionEventNeitherRetargetsNorWavesAgain() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 3)
+
+        harness.navigator.click(at: 3.1)
+
+        #expect(harness.host.focusedPanes == [codex.paneID])
+        #expect(harness.behavior.presentation(at: 3.1).frameID == 12)
+    }
+
+    @Test func answeringThePinnedQuestionMovesTheClickToTheNextOne() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .working), at: 4)
+
+        harness.navigator.click(at: 5)
+
+        #expect(harness.host.focusedPanes == [claude.paneID])
+        #expect(harness.animation(at: 5) == .needsYou)
+    }
+
+    @Test func aPinnedQuestionWhosePaneClosesMovesToTheRemainingOne() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+        harness.director.apply(.sessionRemoved(paneID: codex.paneID), at: 4)
+
+        harness.navigator.click(at: 5)
+
+        #expect(harness.host.focusedPanes == [claude.paneID])
+    }
+
+    @Test func aPinnedQuestionWhoseOccupantChangesMovesToTheRemainingOne() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 2)
+        let replacement = SessionIdentity(
+            paneID: codex.paneID, terminalID: codex.terminalID, workspaceID: codex.workspaceID,
+            tabID: codex.tabID, agent: "codex", agentSession: "sess-z"
+        )
+        harness.director.apply(.sessionAppeared(.init(identity: replacement, status: .working)), at: 4)
+
+        harness.navigator.click(at: 5)
+
+        #expect(harness.host.focusedPanes == [claude.paneID])
+    }
+
+    @Test func aQuestionAskedAfterThePoseEndedIsPinnedAfresh() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .working), at: 2)
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .needsYou), at: 3)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 4)
+
+        harness.navigator.click(at: 5)
+
+        #expect(harness.host.focusedPanes == [claude.paneID])
+    }
+
+    @Test func aReconnectPinsWhateverHerdrNowReportsAsWaiting() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1)
+        harness.director.apply(.disconnected, at: 2)
+        harness.connected([
+            .init(identity: claude, status: .needsYou),
+            .init(identity: codex, status: .working),
+        ], at: 3)
+
+        harness.navigator.click(at: 4)
+
+        #expect(harness.host.focusedPanes == [claude.paneID])
+    }
+
+    @Test func clickingTheLatestOfTwoQuickHopsOpensTheLatestFinishedSession() throws {
+        let harness = try Harness()
+        harness.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+            .init(identity: sibling, status: .working),
+        ])
+        harness.director.apply(.statusChanged(paneID: claude.paneID, status: .ready), at: 1)
+        harness.director.apply(.statusChanged(paneID: codex.paneID, status: .ready), at: 1.2)
+
+        harness.navigator.click(at: 1.5)
+
+        #expect(harness.host.focusedPanes == [codex.paneID])
+        #expect(harness.animation(at: 1.5) == .finished)
+        #expect(harness.animation(at: 6) == .working)
     }
 }

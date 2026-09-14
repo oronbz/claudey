@@ -83,6 +83,32 @@ console logs each result as `Claudey navigation:`.
 - [ ] With no Herdr client inside Ghostty, a click plays the happy reaction
       once and nothing else.
 
+## Concurrent sessions and recovery (issue 05)
+
+Run `tools/demo-concurrent-sessions.sh` from a pane inside Herdr while other
+sessions may be running; it starts two Claude Code sessions in split panes and
+prints what to expect at each step.
+
+Driven on 2026-09-14 with the event log as evidence (see issue 05's
+comments); the sprite was not watched, so the visual checks stay open.
+
+- [ ] Step 1: both work; one hop when the short session answers while the long
+      one keeps working, then concentration again; a second hop when the long
+      one finishes.
+- [ ] Step 2: the wave and held pose while the other session works; the other
+      session finishing behind the pose plays no hop; answering resumes work
+      and ends with one hop.
+- [ ] Step 3: two overlapping questions play one wave and one held pose;
+      clicking during it opens the first asker; after that one is answered the
+      pose stays and a click opens the second.
+- [ ] Step 4: closing both panes returns him to the remaining sessions' state
+      without a hop.
+- [ ] No badge, panel, sound or focus change appears at any point unless he is
+      clicked.
+- [ ] Stopping the Herdr server puts him to rest; starting it again reconnects
+      him and shows the sessions' current state without a hop (same check as
+      issue 03; it ends every Herdr session on the machine, so run it by hand).
+
 ## Silence
 
 - [x] No sound, no notifications, no badges, no dashboards.

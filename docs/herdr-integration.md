@@ -57,7 +57,10 @@ Only a click navigates. Hover, drag, activity events and reconnects never
 request focus. The target is resolved when the click lands, against the
 sessions Herdr currently reports:
 
-1. a session that needs you, the most recently changed one if several;
+1. a session that needs you. The questioning pose pins the session that
+   started it, so a second question arriving mid-pose does not move the click;
+   once the pinned session is answered or gone, the most recently changed
+   session still waiting takes over and the pose carries on without a new wave;
 2. the session whose completion hop is still playing, provided the same
    occupant (pane, agent and `agent_session`) is still there;
 3. otherwise the most recently active session.
@@ -79,6 +82,23 @@ reaction once and does nothing else: no popup, no panel.
 
 The usage string macOS shows on the first permission prompt is
 `NSAppleEventsUsageDescription` in the app target's build settings.
+
+## Several sessions at once
+
+Every agent pane Herdr reports feeds the same character. Needs-you outranks
+working, working outranks idle, and an uncertain session never hides a sibling
+whose state is known. Each completion plays one hop with its own click target;
+a hop that starts while another is in the air replaces it rather than queueing
+behind it, and a completion that lands behind a held questioning pose is not
+saved up to play later. Sessions in one project stay distinct because identity
+is the pane, never the directory or title.
+
+Losing Herdr puts him to rest at once and drops every session and target;
+reconnection is automatic with backoff up to 30 s. The snapshot taken after a
+reconnect is a new baseline: whatever finished, was interrupted or vanished
+while the connection was down is shown as its current state and never
+celebrated. Lines that still arrive from a subscription of the lost connection
+are ignored.
 
 ## Protocol facts the adapter relies on
 
@@ -111,6 +131,14 @@ The usage string macOS shows on the first permission prompt is
   extensions: almost every one-shot request from Claudey, about one in forty
   from a bare CLI, while raw sockets never fail. A snapshot that still fails
   is logged as `Claudey could not read Herdr's … snapshot:` with the error.
+- Herdr reports an interrupted turn (Escape in Claude Code) as working → idle,
+  the same transition as a finished response, so an interruption hops. That
+  is consistent with what finished means here: the response ended, nothing
+  about the outcome. Claudey has no way to tell the two apart without parsing
+  the screen, which he does not do.
+- Several Herdr servers, remote or detached clients: sessions are read from
+  the one socket the plugin names, and navigation is only for panes of that
+  server inside a local Ghostty.
 - A status change that happens inside the 300 ms arming window of a fresh
   subscription is caught by the reconcile snapshot about a second later.
 - A status event naming a different agent than the pane's known occupant is

@@ -5,6 +5,7 @@ final class CompanionDirector {
     private let behavior: CompanionBehavior
     private var shown: CompanionAnimation
     private var celebrating: SessionIdentity?
+    private var waiting: SessionIdentity?
 
     init(behavior: CompanionBehavior, startedAt now: TimeInterval) {
         self.behavior = behavior
@@ -16,6 +17,7 @@ final class CompanionDirector {
 
     func apply(_ event: ActivityEvent, at now: TimeInterval) {
         let update = model.apply(event)
+        waiting = update.state == .needsYou ? model.waitingSession(preferring: waiting) : nil
 
         if update.state != shown {
             behavior.show(update.state, at: now)
@@ -32,7 +34,7 @@ final class CompanionDirector {
     /// rather than whichever session happens to remain.
     func clickTarget(at now: TimeInterval) -> SessionIdentity? {
         let hopping = behavior.isPlaying(.finished, at: now)
-        return model.navigationTarget(celebrating: hopping ? celebrating : nil)
+        return model.navigationTarget(waiting: waiting, celebrating: hopping ? celebrating : nil)
     }
 
     func reactPlayfully(at now: TimeInterval) {

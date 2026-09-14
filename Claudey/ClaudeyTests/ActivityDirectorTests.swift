@@ -221,4 +221,68 @@ struct ActivityDirectorTests {
         behavior.setHovering(false, at: 3)
         #expect(behavior.presentation(at: 3).animation == .needsYou)
     }
+
+    @Test func aCompletionHiddenBehindAQuestionIsNotReplayedWhenItIsAnswered() throws {
+        let (director, behavior) = try director()
+        director.apply(.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .needsYou),
+        ]), at: 0)
+        director.apply(.statusChanged(paneID: claude.paneID, status: .ready), at: 1)
+
+        director.apply(.statusChanged(paneID: codex.paneID, status: .working), at: 2)
+
+        #expect(behavior.presentation(at: 2).animation == .working)
+        #expect(behavior.presentation(at: 2.5).animation == .working)
+    }
+
+    @Test func aQuestionArrivingMidHopTakesOverWithoutAStaleHopAfterwards() throws {
+        let (director, behavior) = try director()
+        director.apply(.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ]), at: 0)
+        director.apply(.statusChanged(paneID: claude.paneID, status: .ready), at: 1)
+
+        director.apply(.statusChanged(paneID: codex.paneID, status: .needsYou), at: 1.5)
+        #expect(behavior.presentation(at: 1.5).animation == .needsYou)
+
+        director.apply(.statusChanged(paneID: codex.paneID, status: .working), at: 2)
+        #expect(behavior.presentation(at: 2).animation == .working)
+        #expect(behavior.presentation(at: 2.5).animation == .working)
+    }
+
+    @Test func aReconnectSnapshotResumesTheAggregateWithoutHistoricalHops() throws {
+        let (director, behavior) = try director()
+        director.apply(.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ]), at: 0)
+        director.apply(.disconnected, at: 1)
+
+        director.apply(.connected([
+            .init(identity: claude, status: .ready),
+            .init(identity: codex, status: .working),
+        ]), at: 2)
+        #expect(behavior.presentation(at: 2).animation == .working)
+        #expect(behavior.presentation(at: 2.5).animation == .working)
+
+        director.apply(.statusChanged(paneID: codex.paneID, status: .ready), at: 3)
+        #expect(behavior.presentation(at: 3).animation == .finished)
+    }
+
+    @Test func aSessionThatTurnsUncertainDoesNotHopWhenItSettles() throws {
+        let (director, behavior) = try director()
+        director.apply(.connected([
+            .init(identity: claude, status: .working),
+            .init(identity: codex, status: .working),
+        ]), at: 0)
+
+        director.apply(.statusChanged(paneID: claude.paneID, status: .uncertain), at: 1)
+        #expect(behavior.presentation(at: 1).animation == .working)
+
+        director.apply(.statusChanged(paneID: claude.paneID, status: .ready), at: 2)
+        #expect(behavior.presentation(at: 2).animation == .working)
+        #expect(behavior.presentation(at: 2.5).animation == .working)
+    }
 }

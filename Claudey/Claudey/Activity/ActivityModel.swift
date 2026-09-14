@@ -61,14 +61,22 @@ final class ActivityModel {
         return .resting
     }
 
-    /// A celebrated session that has since closed or changed occupant yields
-    /// nil rather than the next best session.
-    func navigationTarget(celebrating: SessionIdentity?) -> SessionIdentity? {
+    /// The session a held questioning pose points at: the pinned one while it
+    /// still needs you, otherwise the most recently changed waiting session.
+    func waitingSession(preferring pinned: SessionIdentity?) -> SessionIdentity? {
+        if let pinned, sessions.contains(where: { $0.identity == pinned && $0.status == .needsYou }) {
+            return pinned
+        }
+        return mostRecent(sessions.filter { $0.status == .needsYou })?.identity
+    }
+
+    /// The pinned waiting session is resolved by the director on every event,
+    /// so it is trusted here. A celebrated session that has since closed or
+    /// changed occupant yields nil rather than the next best session.
+    func navigationTarget(waiting: SessionIdentity?, celebrating: SessionIdentity?) -> SessionIdentity? {
         guard isConnected else { return nil }
 
-        if let waiting = mostRecent(sessions.filter { $0.status == .needsYou }) {
-            return waiting.identity
-        }
+        if let waiting { return waiting }
         if let celebrating {
             return sessions.contains { $0.identity == celebrating } ? celebrating : nil
         }

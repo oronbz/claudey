@@ -3,33 +3,19 @@
 # Run from a Herdr pane while Claudey is running. Leaves the demo pane open so
 # the needs-you question can be answered by hand; close it with the printed command.
 set -euo pipefail
+source "$(dirname "$0")/lib/herdr-demo.sh"
+require_herdr_env
 
-if [ "${HERDR_ENV:-}" != 1 ]; then
-  echo "run this from a pane inside Herdr" >&2
-  exit 1
-fi
-
-herdr="${HERDR_BIN_PATH:-herdr}"
 name="${1:-claudey-demo}"
 
 pane="${CLAUDEY_DEMO_PANE:-}"
 if [ -z "$pane" ]; then
-  pane="$("$herdr" pane split --current --direction down --cwd "$PWD" --no-focus \
-    | python3 -c 'import json, sys; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])')"
+  pane="$(split_pane)"
 fi
 echo "demo pane: $pane"
 
 echo "starting Claude Code as '$name' (Claudey should stay idle: a fresh session has nothing to report)"
-for attempt in $(seq 1 10); do
-  if "$herdr" agent start "$name" --kind claude --pane "$pane" > /dev/null 2> /tmp/claudey-demo-start.err; then
-    break
-  fi
-  if [ "$attempt" = 10 ]; then
-    cat /tmp/claudey-demo-start.err >&2
-    exit 1
-  fi
-  sleep 1
-done
+start_agent "$name" "$pane"
 
 echo "1/3 working then finished: expect concentration, then one hop back to idle"
 "$herdr" agent prompt "$name" "Reply with exactly this sentence and nothing else: Hello from the Claudey demo." \
