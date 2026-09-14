@@ -1,29 +1,33 @@
-"""Normalize the imagegen pose study into an aligned, transparent pixel atlas.
+"""Normalize the soft-smooth pose sheet into an aligned, transparent atlas.
 
 Requires Pillow. Run from any directory; all inputs are project-local.
 """
 
 from pathlib import Path
 import json
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets' / 'claudey'
-SOURCE = ASSETS / 'source' / 'generated-poses.png'
+SOURCE = ASSETS / 'source' / 'soft-smooth-spritesheet-v2.png'
 CELL = 128
-PALETTE = [
-    (83, 41, 24),
-    (154, 62, 30),
-    (185, 77, 37),
-    (211, 94, 45),
-    (225, 111, 57),
-    (239, 128, 66),
-]
-SOURCE_ROWS = [0, 313, 625, 918, 1254]
+GROUND = 112
+SCALE = .36
+SOURCE_COLUMNS = [0, 325, 631, 952, 1254]
+SOURCE_ROWS = [0, 306, 629, 907, 1254]
+SPECK_ALPHA = 24
+SOLID_ALPHA = 240
+HARD_EDGE_ALPHA = 245
+EDGE_RAMP = 3
+SPECKLED_INK_FRAMES = {1, 3}
+INK_LUMINANCE = 110
+BODY_RED = 180
+PALETTE_SIZE = 8
+BODY_LUMINANCE = 120
+LIFT = {7: 4}
 
 
-def remove_compression_debris(image):
-    """Drop colored compression flecks left by the generated checkerboard."""
+def remove_debris(image, minimum=6):
     alpha = image.getchannel('A')
     pixels = alpha.load()
     unseen = {(x, y) for y in range(alpha.height) for x in range(alpha.width)
@@ -42,82 +46,127 @@ def remove_compression_debris(image):
                     component.add(neighbor)
                     pending.append(neighbor)
         components.append(component)
-    largest = max(components, key=len)
-    # Eyes and mouths can be isolated by a one-pixel transparent antialias gap;
-    # retain meaningful marks while rejecting tiny compression debris.
-    keep = set().union(*(component for component in components
-                         if component is largest or len(component) >= 6))
-    cleaned = []
-    for y in range(image.height):
-        for x in range(image.width):
-            r, g, b, value = image.getpixel((x, y))
-            cleaned.append((r, g, b, value) if (x, y) in keep else (0, 0, 0, 0))
-    image.putdata(cleaned)
+    keep = set().union(*(c for c in components if len(c) >= minimum))
+    image.putdata([pixel if (x, y) in keep else (0, 0, 0, 0)
+                   for y in range(image.height) for x in range(image.width)
+                   for pixel in (image.getpixel((x, y)),)])
 
 
-def draw_calm_working_face(atlas, index):
-    """Replace the generated angry brow shapes with a quiet focused face."""
-    column, row = index % 4, index // 4
-    origin = (column * CELL, row * CELL)
-    offset_x, offset_y = {3: (0, 0), 4: (-2, -1)}[index]
-    cell = atlas.crop((*origin, origin[0] + CELL, origin[1] + CELL))
-    draw = ImageDraw.Draw(cell)
-    draw.rectangle((42, 66, 84, 86), fill=(*PALETTE[-1], 255))
+def clean_alpha(image):
+    image.putalpha(image.getchannel('A').point(
+        lambda v: 0 if v < SPECK_ALPHA else 255 if v >= SOLID_ALPHA else v))
 
-    ink = (*PALETTE[0], 255)
-    draw.ellipse((48 + offset_x, 72 + offset_y,
-                  56 + offset_x, 77 + offset_y), fill=ink)
-    draw.ellipse((72 + offset_x, 72 + offset_y,
-                  80 + offset_x, 77 + offset_y), fill=ink)
-    draw.line((61 + offset_x, 82 + offset_y,
-               67 + offset_x, 82 + offset_y), fill=ink, width=2)
-    atlas.paste(cell, origin)
+
+def body_mean(image):
+    body = [pixel[:3] for pixel in image.get_flattened_data()
+            if pixel[3] == 255
+            and .299 * pixel[0] + .587 * pixel[1] + .114 * pixel[2] > BODY_LUMINANCE]
+    return tuple(sum(channel) / len(body) for channel in zip(*body))
+
+
+def match_body_colour(image, reference):
+    gains = [target / current for target, current in zip(reference, body_mean(image))]
+    channels = [channel.point(lambda v, g=gain: min(255, round(v * g)))
+                for channel, gain in zip(image.split()[:3], gains)]
+    return Image.merge('RGBA', channels + [image.getchannel('A')])
+
+
+def exterior_filled(mask):
+    filled = mask.copy()
+    width, height = filled.size
+    for corner in ((0, 0), (width - 1, 0), (0, height - 1), (width - 1, height - 1)):
+        if filled.getpixel(corner) == 0:
+            ImageDraw.floodfill(filled, corner, 128)
+    return filled.point(lambda v: 255 if v != 128 else 0)
+
+
+def repair_speckled_ink(image):
+    """Two source poses render ink strokes riddled with translucent light
+    speckles, grey halos around the eyes and a soft shadow ramp. Fill the
+    strokes, repaint the halos from their neighbours and rebuild the edge."""
+    alpha = image.getchannel('A')
+    inside = exterior_filled(alpha.point(lambda v: 255 if v >= 100 else 0)
+                             .filter(ImageFilter.MaxFilter(5))
+                             .filter(ImageFilter.MinFilter(5))).filter(ImageFilter.MinFilter(3))
+    luminance = image.convert('RGB').convert('L')
+    ink = ImageChops.darker(inside, ImageChops.darker(
+        luminance.point(lambda v: 255 if v < INK_LUMINANCE else 0),
+        alpha.point(lambda v: 255 if v >= 100 else 0)))
+    filled_ink = ImageChops.darker(inside, ink.filter(ImageFilter.MaxFilter(7))
+                                   .filter(ImageFilter.MinFilter(7)))
+    ink_pixels = [pixel[:3] for pixel, flag in zip(image.get_flattened_data(),
+                                                   ink.get_flattened_data()) if flag]
+    ink_colour = tuple(round(sum(channel) / len(ink_pixels)) for channel in zip(*ink_pixels))
+    holes = ImageChops.subtract(filled_ink, ink)
+    image.paste(Image.new('RGBA', image.size, (*ink_colour, 255)), mask=holes)
+
+    pixels = image.load()
+    width, height = image.size
+    improper = {(x, y) for y in range(height) for x in range(width)
+                if inside.getpixel((x, y)) and not filled_ink.getpixel((x, y))
+                and (pixels[x, y][3] < HARD_EDGE_ALPHA
+                     or (pixels[x, y][0] <= BODY_RED and luminance.getpixel((x, y)) >= INK_LUMINANCE))}
+    proper = {(x, y) for y in range(height) for x in range(width)
+              if inside.getpixel((x, y))} - improper
+    while improper:
+        settled = []
+        for x, y in improper:
+            neighbours = [pixels[nx, ny] for nx in (x - 1, x, x + 1) for ny in (y - 1, y, y + 1)
+                          if (nx, ny) in proper]
+            if neighbours:
+                pixels[x, y] = (*(round(sum(p[k] for p in neighbours) / len(neighbours))
+                                  for k in range(3)), 255)
+                settled.append((x, y))
+        if not settled:
+            break
+        improper.difference_update(settled)
+        proper.update(settled)
+
+    image.paste(Image.new('RGBA', image.size, (*ink_colour, 255)), mask=ImageChops.invert(inside))
+    image.putalpha(inside.filter(ImageFilter.GaussianBlur(EDGE_RAMP / 2)))
+
+
+def representative_palette(atlas):
+    opaque = [pixel[:3] for pixel in atlas.get_flattened_data() if pixel[3] == 255]
+    swatch = Image.new('RGB', (len(opaque), 1))
+    swatch.putdata(opaque)
+    quantized = swatch.quantize(PALETTE_SIZE, method=Image.Quantize.MEDIANCUT)
+    colors = quantized.getpalette()[:PALETTE_SIZE * 3]
+    palette = [tuple(colors[i:i + 3]) for i in range(0, len(colors), 3)]
+    return sorted(set(palette), key=lambda c: .299 * c[0] + .587 * c[1] + .114 * c[2])
 
 
 def build():
-    source = Image.open(SOURCE).convert('RGB')
+    source = Image.open(SOURCE).convert('RGBA')
     if source.size != (1254, 1254):
-        raise ValueError('Source crops were inspected for the 1254 × 1254 pose study')
+        raise ValueError('Source grid lines were inspected for the 1254 × 1254 sheet')
     atlas = Image.new('RGBA', (CELL * 4, CELL * 4))
     rectangles = []
+    reference = None
     for index in range(16):
         column, row = index % 4, index // 4
-        pose = source.crop((round(column * source.width / 4),
-                            SOURCE_ROWS[row],
-                            round((column + 1) * source.width / 4),
-                            SOURCE_ROWS[row + 1]))
-        # The generated background is achromatic; all character colors are warm.
-        mask = Image.new('L', pose.size)
-        mask.putdata([max(0, min(255, (r - max(g, b) - 7) * 9))
-                      for r, g, b in pose.get_flattened_data()])
-        bounds = mask.getbbox()
+        pose = source.crop((SOURCE_COLUMNS[column], SOURCE_ROWS[row],
+                            SOURCE_COLUMNS[column + 1], SOURCE_ROWS[row + 1]))
+        clean_alpha(pose)
+        if index in SPECKLED_INK_FRAMES:
+            repair_speckled_ink(pose)
+        bounds = pose.getbbox()
         if bounds is None:
             raise ValueError(f'No character in source cell {index}')
-        pose.putalpha(mask)
         pose = pose.crop(bounds)
-        # One scale preserves relative width and squash/stretch. Native 128 px
-        # cells avoid enlarging a low-resolution atlas for desktop display.
-        pose = pose.resize((round(pose.width * .36), round(pose.height * .36)),
+        pose = pose.resize((round(pose.width * SCALE), round(pose.height * SCALE)),
                            Image.Resampling.LANCZOS)
-        # Quantize opaque color while retaining clean antialiased edge alpha.
-        pixels = []
-        for r, g, b, alpha in pose.get_flattened_data():
-            color = min(PALETTE, key=lambda c: sum((a - v) ** 2 for a, v in zip(c, (r, g, b))))
-            pixels.append((*color, alpha) if alpha else (0, 0, 0, 0))
-        pose.putdata(pixels)
-        remove_compression_debris(pose)
-        lift = {6: 8, 7: 16}.get(index, 0)
-        visible = pose.getbbox()
-        left, top, right, bottom = visible
+        clean_alpha(pose)
+        remove_debris(pose)
+        reference = reference or body_mean(pose)
+        pose = match_body_colour(pose, reference)
+        left, top, right, bottom = pose.getbbox()
         x = (CELL - (right - left)) // 2 - left
-        y = 112 - bottom - lift
+        y = GROUND - bottom - LIFT.get(index, 0)
         if x + left < 4 or y + top < 4 or x + right > CELL - 4:
             raise ValueError(f'Pose {index} exceeds safe cell bounds')
         atlas.alpha_composite(pose, (column * CELL + x, row * CELL + y))
         rectangles.append(dict(x=column * CELL, y=row * CELL, width=CELL, height=CELL))
-
-    for index in (3, 4):
-        draw_calm_working_face(atlas, index)
 
     atlas.save(ASSETS / 'sprites.png')
 
@@ -128,14 +177,15 @@ def build():
     manifest = dict(
         version=1, image='sprites.png',
         sheet=dict(width=512, height=512, columns=4, rows=4),
-        cell=dict(width=CELL, height=CELL), anchor=dict(x=64, y=112),
-        desktopScale=1, palette=['#%02x%02x%02x' % c for c in PALETTE],
+        cell=dict(width=CELL, height=CELL), anchor=dict(x=64, y=GROUND),
+        desktopScale=1,
+        palette=['#%02x%02x%02x' % c for c in representative_palette(atlas)],
         frames=rectangles,
         animations={
             'idle': animation('loop', [(0, 1200), (1, 950), (0, 600), (2, 140), (0, 800), (1, 950)]),
             'working': animation('loop', [(3, 650), (4, 650)]),
             'finished': animation('once', [(5, 130), (6, 110), (7, 150), (6, 100), (8, 130), (14, 380)], previewReturnTo='idle'),
-            'needs-you': animation('hold', [(9, 180), (10, 180), (11, 180), (10, 180), (11, 180), (12, 600)]),
+            'needs-you': animation('hold', [(9, 180), (10, 180), (9, 180), (10, 180), (9, 180), (12, 600)]),
             'resting': animation('hold', [(13, 1000)]),
             'hover': animation('loop', [(14, 450), (15, 450)]),
         })

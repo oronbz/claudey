@@ -1,5 +1,11 @@
 # Generation record
 
+## Soft-smooth sheet (current)
+
+`source/soft-smooth-spritesheet-v2.png` was generated with the built-in imagegen tool on September 11, 2026 as a 1254 × 1254 RGBA sheet with real transparency, a dark outline and soft shading. A focused edit corrected frame 1 to an open-eyed subtle inhale without a sparkle and frame 3 to calm concentration; the other fourteen source cells were retained unchanged. The sheet follows the same 16-frame reading order as the original prompt below, except that the hop frames carry drawn motion lines instead of relying on a build-time lift. `tools/build-sprites.py` reads it directly; the earlier chroma-key, six-colour quantization and working-face repaint steps are no longer part of the build. Poses 1 and 3 in this sheet render redder, with speckled translucent ink and a soft shadow; the build normalises both to match pose 0.
+
+## Pixel-art study (superseded)
+
 Generated September 10, 2026 with the built-in imagegen tool, using `source/soft-spark-reference.png` as the user's identity reference. No CLI/API fallback was used.
 
 The selected original output is committed as `source/generated-poses.png`. An imagegen follow-up requested real transparency but returned an opaque background again; that unused variant is not an input to this project. With the user's explicit permission, `tools/build-sprites.py` produces the final atlas and map locally. The original 64 px build was later replaced by native 128 px cells with antialiased edges after desktop review found it too chunky. No project asset depends on a temporary or generator-only path.

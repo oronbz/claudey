@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import json
+import re
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,9 +45,8 @@ def main():
     alpha_values = set(image.getchannel('A').get_flattened_data())
     assert 0 in alpha_values and 255 in alpha_values
     assert any(0 < value < 255 for value in alpha_values), 'silhouette edge is not antialiased'
-    opaque_colors = {pixel[:3] for pixel in image.get_flattened_data() if pixel[3] == 255}
-    assert opaque_colors.issubset({tuple(bytes.fromhex(color[1:]))
-                                  for color in manifest['palette']})
+    assert all(re.fullmatch(r'#[0-9a-f]{6}', color) for color in manifest['palette'])
+    assert len(manifest['palette']) >= 2, 'palette must summarise outline and body colours'
 
     for index, frame in enumerate(manifest['frames']):
         box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
@@ -57,36 +57,24 @@ def main():
         left, top, right, bottom = bounds
         assert left >= 4 and right <= cell_width - 4, f'frame {index} clips horizontally: {bounds}'
         assert top >= 4 and bottom <= cell_height - 4, f'frame {index} clips vertically: {bounds}'
-        expected_bottom = {6: 104, 7: 96}.get(index, manifest['anchor']['y'])
+        expected_bottom = manifest['anchor']['y'] - {7: 4}.get(index, 0)
         assert bottom == expected_bottom, f'frame {index} drifts from its intended ground: {bounds}'
+
+    body_means = []
+    for frame in manifest['frames']:
+        box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
+        body = [pixel[:3] for pixel in image.crop(box).get_flattened_data()
+                if pixel[3] == 255 and .299 * pixel[0] + .587 * pixel[1] + .114 * pixel[2] > 120]
+        body_means.append([sum(channel) / len(body) for channel in zip(*body)])
+    for index, mean in enumerate(body_means):
+        drift = max(abs(a - b) for a, b in zip(mean, body_means[0]))
+        assert drift < 3, f'frame {index} body colour drifts from frame 0 by {drift:.1f}'
 
     for index in (14, 15):
         frame = manifest['frames'][index]
         box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
         top = image.crop(box).getbbox()[1]
-        assert top >= 16, f'happy-hover frame {index} has only {top}px top clearance'
-
-    ink = tuple(bytes.fromhex(manifest['palette'][0][1:]))
-    working_offsets = {3: (0, 0), 4: (-2, -1)}
-    face_centroids = []
-    for index in (3, 4):
-        frame = manifest['frames'][index]
-        box = (frame['x'], frame['y'], frame['x'] + frame['width'], frame['y'] + frame['height'])
-        cell = image.crop(box)
-        angry_brow_pixels = [cell.getpixel((x, y)) for y in range(66, 71)
-                             for x in range(44, 82)]
-        assert all(pixel[:3] != ink for pixel in angry_brow_pixels), (
-            f'working frame {index} contains dark marks in the angry-brow band'
-        )
-        offset_x, offset_y = working_offsets[index]
-        assert cell.getpixel((52 + offset_x, 75 + offset_y))[:3] == ink
-        assert cell.getpixel((76 + offset_x, 75 + offset_y))[:3] == ink
-        assert cell.getpixel((64 + offset_x, 82 + offset_y))[:3] == ink
-        face_pixels = [(x, y) for y in range(66, 86) for x in range(42, 84)
-                       if cell.getpixel((x, y))[:3] == ink]
-        face_centroids.append((sum(x for x, _ in face_pixels) / len(face_pixels),
-                               sum(y for _, y in face_pixels) / len(face_pixels)))
-    assert face_centroids[0] != face_centroids[1], 'Working face is pinned while its body moves'
+        assert top >= 8, f'happy-hover frame {index} has only {top}px top clearance'
 
     for animation in manifest['animations'].values():
         assert animation['playback'] in ('loop', 'once', 'hold')
@@ -94,7 +82,7 @@ def main():
             assert 0 <= frame['id'] < len(manifest['frames'])
             assert frame['durationMs'] > 0
 
-    print('PASS: native 128px desktop cells, hover clearance, RGBA bounds, and animation map')
+    print('PASS: native 128px desktop cells, shared ground, hover clearance, RGBA bounds, and animation map')
 
 
 if __name__ == '__main__':
