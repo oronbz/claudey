@@ -15,9 +15,9 @@ Verified against Herdr 0.8.2, socket protocol 20, on 2026-09-11.
   running and only delivers a reopen when it is, so repeated activation never
   produces a second Claudey. The hook exits immediately; the app owns its
   lifecycle.
-- `Claudey/Herdr/` is the adapter: newline-delimited JSON over the Unix socket,
-  `session.snapshot` for the baseline, `events.subscribe` for changes, quiet
-  reconnection with backoff up to 30 s.
+- `Claudey/Herdr/` is the adapter: newline-delimited JSON over a plain BSD
+  Unix socket, `session.snapshot` for the baseline, `events.subscribe` for
+  changes, quiet reconnection with backoff up to 30 s.
 - `Claudey/Activity/` is Herdr-independent: session records, the aggregate
   state, the director that decides what Claudey shows, and the click navigator
   that turns an intentional click into one navigation request.
@@ -105,10 +105,12 @@ The usage string macOS shows on the first permission prompt is
 - Needs-you is Herdr's screen-based `blocked` classification. Prompts Herdr's
   Claude Code manifest does not recognise show as idle, so Claudey may miss a
   question; he never invents one.
-- The one-shot snapshot connection has been seen failing with POSIX 50
-  "Network is down" from Network.framework while the server was healthy; the
-  adapter backs off and reconnects, logging `Claudey could not read Herdr's …
-  snapshot:` with the error. Clicks during that gap activate Ghostty only.
+- The socket is a BSD socket on purpose. Network.framework connections to
+  the same path intermittently fail with POSIX 50 "Network is down" on the
+  owner's Mac, which runs Netskope's app-proxy and CrowdStrike network
+  extensions: almost every one-shot request from Claudey, about one in forty
+  from a bare CLI, while raw sockets never fail. A snapshot that still fails
+  is logged as `Claudey could not read Herdr's … snapshot:` with the error.
 - A status change that happens inside the 300 ms arming window of a fresh
   subscription is caught by the reconcile snapshot about a second later.
 - A status event naming a different agent than the pane's known occupant is
