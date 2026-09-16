@@ -378,10 +378,22 @@ struct HerdrConnectionTests {
         harness.armStatusSubscriptions()
 
         harness.connection.stop()
+
+        #expect(harness.animation == .resting)
+        #expect(harness.events.last == .disconnected)
         harness.scheduler.advance(by: 60)
 
         #expect(harness.transport.subscriptions.allSatisfy { $0.isCancelled })
         #expect(harness.transport.liveLifecycle == nil)
+    }
+
+    @Test func stoppingBeforeGoingLiveSaysNothing() throws {
+        let harness = try Harness()
+        harness.connection.start()
+
+        harness.connection.stop()
+
+        #expect(harness.events.isEmpty)
     }
 
     @Test func focusingAPaneAsksHerdrForExactlyThatPane() throws {

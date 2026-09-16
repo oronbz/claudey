@@ -109,6 +109,51 @@ comments); the sprite was not watched, so the visual checks stay open.
       him and shows the sessions' current state without a hop (same check as
       issue 03; it ends every Herdr session on the machine, so run it by hand).
 
+## Installation and everyday controls (issue 06)
+
+Run `tools/install.sh` (with `CLAUDEY_CONFIGURATION=Debug` to drive the menu
+through signals: `-USR1` clicks, `-USR2` connects/disconnects, `-INFO`
+toggles launch at login). Driven on 2026-09-16 on the owner's Mac (macOS
+26.6.1, Xcode 27.0, Herdr 0.8.2, Ghostty 1.3.2) with the installed app's log
+as evidence; the sprite was not watched, so visual checks stay open.
+
+- [x] `tools/install.sh` builds, installs `~/Applications/Claudey.app`, links
+      the plugin, writes `app-path`, and starts exactly one Claudey from the
+      installed bundle. Running it again replaces the app and relinks without
+      touching `~/.config/herdr/config.toml`, other plugins or `~/.claude`.
+- [x] `herdr plugin action invoke connect --plugin claudey` and the startup
+      hook against a running copy leave one process and no `connect-request`.
+- [x] A second launch of the installed binary quits itself at once.
+- [x] Disconnect rests him and is remembered (`herdrConnectionEnabled = 0`);
+      the startup hook (`claudey-connect.sh` without `--connect`) leaves him
+      disconnected; the Connect action reconnects and the marker is consumed.
+- [x] Reconnect after a disconnect logs `disconnected` then one `connected`
+      snapshot with the sessions' current states and no hop.
+- [x] Launch at Login starts off; toggling on registers
+      `file:///Users/oronb/Applications/Claudey.app/` as an enabled login item
+      (`sfltool dumpbtm`); toggling off leaves it disabled.
+- [x] Quit stops the process; nothing relaunches it within ten seconds; the
+      startup hook starts a fresh copy afterwards.
+- [x] The installed flow end to end with `tools/demo-live-session.sh`: fresh
+      session appears ready with no hop, working → ready (hop), working →
+      needs-you, a click during the pose focuses that pane and its Ghostty
+      terminal (`focusedPane("w2H:pH")`, `focused: true`), closing the pane
+      removes the session without a hop.
+- [x] `tools/uninstall.sh` with launch at login on: quits him, unregisters the
+      login item, unlinks the plugin, removes the app, preferences, support
+      files and the plugin config dir; Herdr's config, the `annotate` plugin
+      and `~/.claude/settings.json` are untouched afterwards.
+- [ ] The menu itself, by pointer: Disconnect from Herdr / Connect to Herdr
+      swap titles, Launch at Login shows its checkmark, and a change made in
+      System Settings › Login Items is reflected the next time the menu opens.
+- [ ] Right-clicking him and choosing any item leaves keyboard focus where it
+      was.
+- [ ] Dragging the installed copy and relaunching restores his position;
+      desktop spaces and full-screen exclusion behave as in Presentation above
+      (the space-switch and display-disconnect checks there are still open).
+- [ ] Toggling Launch at Login on, logging out and back in starts one Claudey
+      connected to the default Herdr socket; toggling it off stops that.
+
 ## Silence
 
 - [x] No sound, no notifications, no badges, no dashboards.

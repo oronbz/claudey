@@ -19,4 +19,15 @@ struct HerdrConnectionContextTests {
         #expect(HerdrConnectionContext.resolve(fileURL: missing, environment: ["HERDR_SOCKET_PATH": "/tmp/env.sock"]).socketPath == "/tmp/env.sock")
         #expect(HerdrConnectionContext.resolve(fileURL: missing, environment: [:]).socketPath.hasSuffix("/.config/herdr/herdr.sock"))
     }
+
+    @Test func aConnectRequestIsConsumedOnce() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("claudey-connect-\(UUID().uuidString)")
+        #expect(HerdrConnectionContext.takeConnectRequest(fileURL: url) == false)
+
+        try Data().write(to: url)
+
+        #expect(HerdrConnectionContext.takeConnectRequest(fileURL: url) == true)
+        #expect(HerdrConnectionContext.takeConnectRequest(fileURL: url) == false)
+        #expect(!FileManager.default.fileExists(atPath: url.path))
+    }
 }

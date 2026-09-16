@@ -10,6 +10,15 @@ struct HerdrConnectionContext: Equatable, Sendable {
             .appendingPathComponent("herdr-connection.json")
     }
 
+    /// The plugin's Connect action leaves this marker; it is honoured once.
+    static var connectRequestURL: URL {
+        contextFileURL.deletingLastPathComponent().appendingPathComponent("connect-request")
+    }
+
+    static func takeConnectRequest(fileURL: URL = connectRequestURL) -> Bool {
+        (try? FileManager.default.removeItem(at: fileURL)) != nil
+    }
+
     static var defaultSocketPath: String {
         NSHomeDirectory() + "/.config/herdr/herdr.sock"
     }

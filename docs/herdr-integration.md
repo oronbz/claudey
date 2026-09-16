@@ -14,7 +14,9 @@ Verified against Herdr 0.8.2, socket protocol 20, on 2026-09-11.
   and then runs `open -g` on the app. `open` starts the app if it is not
   running and only delivers a reopen when it is, so repeated activation never
   produces a second Claudey. The hook exits immediately; the app owns its
-  lifecycle.
+  lifecycle. The action alone passes `--connect`, which also leaves a
+  `connect-request` marker next to the context file; the app consumes it to
+  override a disconnect the owner chose (see Controls).
 - `Claudey/Herdr/` is the adapter: newline-delimited JSON over a plain BSD
   Unix socket, `session.snapshot` for the baseline, `events.subscribe` for
   changes, quiet reconnection with backoff up to 30 s.
@@ -25,12 +27,38 @@ Verified against Herdr 0.8.2, socket protocol 20, on 2026-09-11.
   for the exact pane, then Ghostty's AppleScript `focus` for the terminal that
   hosts the Herdr client.
 
-Link the plugin from a checkout with `herdr plugin link "$PWD/plugin"`. Set
-`CLAUDEY_APP=/path/to/Claudey.app` or write that path into
-`$(herdr plugin config-dir claudey)/app-path` when the app is not registered
-with Launch Services; otherwise `open -g -b com.oronbz.Claudey` is used.
-Without the plugin, a developer launch falls back to `HERDR_SOCKET_PATH` and
-then `~/.config/herdr/herdr.sock`.
+`tools/install.sh` builds the app, copies it to `~/Applications`, links the
+plugin and writes the app's path into `$(herdr plugin config-dir claudey)/app-path`,
+which the launcher prefers; `CLAUDEY_APP=/path/to/Claudey.app` overrides it
+and `open -g -b com.oronbz.Claudey` is the last resort. `tools/uninstall.sh`
+reverses exactly that. Without the plugin, a developer launch falls back to
+`HERDR_SOCKET_PATH` and then `~/.config/herdr/herdr.sock`.
+
+## Controls
+
+Claudey's right-click menu is his whole interface: hide/show was dropped in
+issue 02 (a hidden avatar has nothing to right-click), so presence is quit.
+
+- **Disconnect from Herdr / Connect to Herdr.** Disconnecting stops watching
+  Herdr at once, puts him to rest and cancels retry; the choice is stored in
+  his preferences (`herdrConnectionEnabled`) and survives relaunches and the
+  plugin's startup hook, which only refreshes a connection the owner still
+  wants. Connecting again, from the menu or through the plugin's `Connect
+  Claudey` action (which `tools/install.sh` also uses to start him), reads a
+  fresh snapshot: current activity is shown and nothing that happened while
+  disconnected is celebrated. `HerdrLink` holds this rule.
+- **Launch at Login.** Off until turned on. It uses `SMAppService.mainApp`, so
+  the item appears under System Settings › General › Login Items and points at
+  the installed bundle; the menu re-reads the real status each time it opens,
+  and a registration macOS wants approved opens that settings pane instead of
+  claiming success. Re-run `tools/install.sh` after moving the app.
+- **Quit Claudey.** Stops the app. Nothing relaunches it: the plugin's hook is
+  a one-shot `open`, there is no launch agent, and retry lives inside the
+  process that just ended. The next Herdr session or the Connect action
+  starts him again.
+- `tools/uninstall.sh` launches the app once with `--disable-launch-at-login`
+  before removing it, because only the app itself may unregister its login
+  item.
 
 ## Translation
 
@@ -163,6 +191,12 @@ are ignored.
 - The completion hop keeps its target for the one second it plays. A click
   after that follows the most-recently-active rule, which usually still names
   the same session.
+- The installed app is ad-hoc signed for local use only; there is no
+  notarisation, release channel or App Store delivery. Ghostty's Automation
+  permission is granted to this bundle id and is reset by `tools/uninstall.sh`.
+- The login item records the installed bundle's path. Moving or deleting the
+  app without `tools/uninstall.sh` leaves a dangling entry in Login Items
+  until the app is put back and the item toggled off.
 
 ## Live demo
 
@@ -179,4 +213,6 @@ work resume and a final hop, then close the pane with the printed command. In a
 debug build every activity event is logged as `Claudey activity:` and every
 click's result as `Claudey navigation:` in the Xcode console, and
 `kill -USR1 $(pgrep -x Claudey)` performs the same navigation as a click so
-the path can be driven from a script.
+the path can be driven from a script; `kill -USR2` toggles his connect/
+disconnect menu item and `kill -INFO` toggles launch at login the same way.
+`tools/install.sh` accepts `CLAUDEY_CONFIGURATION=Debug` for such runs.

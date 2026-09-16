@@ -38,21 +38,20 @@ final class HerdrConnection {
     func start() {
         guard !running else { return }
         running = true
+        retryDelay = Self.initialRetryDelay
         connect()
     }
 
     func stop() {
         running = false
-        tearDown()
+        drop()
     }
 
     func refresh() {
         guard running else { return start() }
         let path = socketPath()
         if path != currentPath {
-            let wasLive = live
-            tearDown()
-            if wasLive { onEvent?(.disconnected) }
+            drop()
             connect()
         } else if lifecycle == nil {
             connect()
@@ -239,12 +238,16 @@ final class HerdrConnection {
 
     private func fail() {
         guard running else { return }
-        let wasLive = live
-        tearDown()
-        if wasLive { onEvent?(.disconnected) }
+        drop()
         let delay = retryDelay
         retryDelay = min(retryDelay * 2, Self.maxRetryDelay)
         schedule(after: delay) { [weak self] in self?.connect() }
+    }
+
+    private func drop() {
+        let wasLive = live
+        tearDown()
+        if wasLive { onEvent?(.disconnected) }
     }
 
     private func tearDown() {

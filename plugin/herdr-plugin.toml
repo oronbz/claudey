@@ -13,4 +13,4 @@ id = "connect"
 title = "Connect Claudey"
 description = "Start the companion if needed and connect him to this Herdr session."
 contexts = ["global"]
-command = ["bash", "claudey-connect.sh"]
+command = ["bash", "claudey-connect.sh", "--connect"]
