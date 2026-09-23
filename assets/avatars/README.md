@@ -7,6 +7,7 @@ Every avatar Claudey can wear is drawn in code by `tools/avatars/`: ink outlines
 | `block` (Block, default) | A hatched terracotta box with two tall eyes, stub arms and four thin legs. |
 | `soft-spark` (Soft Spark) | A radial spark with a tall tuft, soft rounded rays, two padded feet and a small smile. |
 | `ram` (Ram) | Herdr's ram as an eSheep-style desktop sheep in Catppuccin Mocha colours: soft lavender wool, a dark face with a rosewater curled horn and a `>_` prompt for an eye. He faces right, trots while working, grazes when idle and naps lying down. |
+| `catpuccino` (Catpuccino) | An anime caramel cat with big shiny eyes and round ears, sitting in a cappuccino cup on a saucer, wearing a foam cap with a latte-art heart; his tail is the cup's handle. He kneads the rim while working, pops out cheering when a response ends, waves a pink-beaned paw when an agent needs you and dozes low in the cup. |
 
 ## Layout
 

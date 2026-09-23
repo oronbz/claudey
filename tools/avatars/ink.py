@@ -91,6 +91,7 @@ class Canvas:
     def __init__(self, hatch_dark, hatch_light, ink=INK):
         self.image = Image.new('RGBA', (CELL * SS, CELL * SS), (0, 0, 0, 0))
         self.hatch_colours = hatch_dark, hatch_light
+        self.hatch_spacing = 2.3
         self.ink = ink
 
     def mask(self, pts):
@@ -125,7 +126,8 @@ class Canvas:
                 draw.ellipse((x * SS - r, y * SS - r, x * SS + r, y * SS + r), fill=255)
         return m
 
-    def hatch(self, region, rng, angle=62, spacing=2.3):
+    def hatch(self, region, rng, angle=62, spacing=None):
+        spacing = spacing or self.hatch_spacing
         layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(layer)
         a = math.radians(angle)

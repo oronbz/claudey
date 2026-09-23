@@ -6,6 +6,7 @@ enum Avatar: String, CaseIterable, Sendable {
     case block
     case softSpark = "soft-spark"
     case ram
+    case catpuccino
 
     static let standard = Avatar.block
 

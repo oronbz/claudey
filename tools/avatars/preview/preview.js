@@ -4,7 +4,7 @@ export {};
 /** @typedef {{strip: string, frameCount: number, playback: 'loop'|'once'|'hold', frames: {index: number, durationMs: number}[]}} Animation */
 /** @typedef {{id: string, name: string, cell: {width: number, height: number}, animations: Record<Reaction, Animation>}} Avatar */
 
-const AVATARS = ['block', 'soft-spark', 'ram'];
+const AVATARS = ['block', 'soft-spark', 'ram', 'catpuccino'];
 const ROOT = '../../../assets/avatars/';
 
 const labels = {
