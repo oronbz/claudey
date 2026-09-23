@@ -10,16 +10,20 @@ Shepherd himself is the whole interface, and right-clicking him opens his menu.
 
 ## Homebrew cask (#5)
 
+Verified by the owner on 2026-09-23 with v0.1.0.
+
 - [x] `tools/release.sh` refuses to run when the app's version and the plugin
       manifest's differ, and otherwise prints the zip path and its sha256.
 - [x] `brew style` and `brew audit --cask --online oronbz/tap/shepherd` pass.
-- [ ] With no developer install present, `brew install --cask
+- [x] With no developer install present, `brew install --cask
       oronbz/tap/shepherd` puts `Shepherd.app` in `/Applications`, and he
-      launches after approving him once under Privacy & Security.
+      launches after approving him once under Privacy & Security. The owner's
+      Mac has Gatekeeper assessments disabled (`spctl --status`), so he
+      launched with no prompt and the approval step is still unobserved.
 - [x] `brew info --cask shepherd` shows the released version.
-- [ ] With him running, `brew uninstall --cask shepherd` quits him before the
+- [x] With him running, `brew uninstall --cask shepherd` quits him before the
       app is removed.
-- [ ] After reinstalling and launching him, `brew uninstall --zap --cask
+- [x] After reinstalling and launching him, `brew uninstall --zap --cask
       shepherd` leaves no `/Applications/Shepherd.app`, no
       `~/Library/Application Support/Shepherd` and no
       `~/Library/Preferences/com.oronbz.Shepherd.plist`
