@@ -5,6 +5,9 @@ min_herdr_version = "0.8.0"
 description = "Wake the Shepherd desktop companion and point him at this Herdr session."
 platforms = ["macos"]
 
+[[build]]
+command = ["bash", "shepherd-install-app.sh"]
+
 [[startup]]
 command = ["bash", "shepherd-connect.sh"]
 

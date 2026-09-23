@@ -37,7 +37,10 @@ One number names a release: the app's `MARKETING_VERSION` (every target in
 
 5. Run the Homebrew checks in [manual verification](manual-verification.md).
 
-`brew install --cask oronbz/tap/shepherd` installs him into `/Applications`.
+`herdr plugin install oronbz/shepherd/plugin` runs the plugin's build step,
+which installs or upgrades the cask, so users pick up a release once the tap
+is bumped. `brew install --cask oronbz/tap/shepherd` installs him into
+`/Applications` on its own.
 A plain `brew uninstall --cask shepherd` quits him before removing the app;
 adding `--zap` also removes `~/Library/Application Support/Shepherd` and his
 preferences. Ghostty's Automation permission is left as it is. Homebrew's

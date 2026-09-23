@@ -19,9 +19,35 @@ hand.
 
 ## Installing him
 
-Prerequisites: macOS 26.6 or newer, Xcode 27, Herdr 0.8 or newer on `PATH`,
-and Ghostty as the terminal hosting Herdr if you want clicks to bring the
-terminal forward.
+Prerequisites: macOS 26.6 or newer, [Homebrew](https://brew.sh), Herdr 0.8 or
+newer, and Ghostty as the terminal hosting Herdr if you want clicks to bring
+the terminal forward.
+
+```bash
+herdr plugin install oronbz/shepherd/plugin
+```
+
+Herdr's preview lists the plugin's one build step, which installs the
+`shepherd` cask from [oronbz/tap](https://github.com/oronbz/homebrew-tap) into
+`/Applications`, or upgrades it when he is already installed. Without Homebrew
+the install stops and points to it; if Homebrew fails, the install fails with
+its output and the plugin is not registered. From then on the plugin's startup
+hook wakes him with each Herdr session and the `Connect Shepherd` action wakes
+him on demand. No Xcode is needed.
+
+He is ad-hoc signed, so macOS blocks his first launch. Open System Settings >
+Privacy & Security, choose Open Anyway next to Shepherd, then run
+`Connect Shepherd` or start a new Herdr session. Clicking him asks once for
+permission to control Ghostty; that prompt can come back after an upgrade,
+because each build carries a new signature.
+
+To update him, reinstall the plugin with the same command, or run
+`brew upgrade --cask shepherd`. To remove him, run
+`brew uninstall --zap --cask shepherd`, then `herdr plugin uninstall shepherd`.
+
+### From a checkout
+
+Developer builds need Xcode 27 and `herdr` on `PATH`.
 
 ```bash
 tools/install.sh
@@ -30,9 +56,8 @@ tools/install.sh
 This builds a Release `Shepherd.app` into `~/Applications`, links the Herdr
 plugin from `plugin/`, and starts him. Re-running it rebuilds and replaces only
 those pieces; Herdr's own configuration, other plugins and everything under
-`~/.claude` are left alone. From then on the plugin's startup hook wakes him
-with each Herdr session and the `Connect Shepherd` action wakes him on demand.
-Set `SHEPHERD_INSTALL_DIR` to install elsewhere.
+`~/.claude` are left alone. Linking skips the plugin's build step, so Homebrew
+is not involved. Set `SHEPHERD_INSTALL_DIR` to install elsewhere.
 
 ```bash
 tools/uninstall.sh
@@ -44,7 +69,8 @@ files, and nothing else. See
 state mapping, protocol notes, limitations and the live demo script.
 
 A developer install and a Homebrew install of Shepherd must not coexist: both
-share one bundle id. Remove one before installing the other; see
+share one bundle id, and Herdr refuses to install the plugin over a linked
+one. Remove one before installing the other; see
 [releasing](docs/releasing.md).
 
 ## Developing him
@@ -60,7 +86,8 @@ watches Herdr's default socket.
 Tests: `Shepherd/ShepherdTests` (Swift Testing) covers every avatar's frame map, animation
 timing, reaction selection, drag-versus-click, position restoration, realistic
 Herdr snapshots and events driving his reactions through a fake socket, and
-his menu's avatar, connect, disconnect and quit controls. Checks the issues
+his menu's avatar, connect, disconnect and quit controls. `tools/test-plugin.sh`
+runs the plugin's Homebrew build step against a fake `brew`. Checks the issues
 ask for that no test can reach are listed in
 [manual verification](docs/manual-verification.md).
 

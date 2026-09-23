@@ -8,6 +8,26 @@ Build and run from Xcode (scheme `Shepherd`, destination `My Mac`), or install
 with `tools/install.sh`. The app has no Dock icon and no menu-bar icon:
 Shepherd himself is the whole interface, and right-clicking him opens his menu.
 
+## Install through the Herdr plugin (#6)
+
+Start with no developer install (`tools/uninstall.sh`) and no cask
+(`brew uninstall --zap --cask shepherd`). `tools/test-plugin.sh` passes.
+
+- [ ] `herdr plugin install oronbz/shepherd/plugin` shows a preview that lists
+      the `bash shepherd-install-app.sh` build step.
+- [ ] Confirming it installs the `shepherd` cask into `/Applications`
+      (`brew list --cask shepherd` succeeds) and registers the plugin
+      (`herdr plugin list` shows `shepherd`).
+- [ ] After approving his first launch under Privacy & Security, a new Herdr
+      session starts him from the startup hook, and `Connect Shepherd` wakes
+      him when he has been quit.
+- [ ] With an older cask installed (`brew info --cask shepherd` shows it
+      outdated), running the same `herdr plugin install` again upgrades it to
+      the latest release rather than failing, and he starts again from the
+      startup hook.
+- [ ] With an older cask installed (`brew info --cask shepherd` shows it
+      outdated), `brew upgrade --cask shepherd` upgrades him.
+
 ## Homebrew cask (#5)
 
 Verified by the owner on 2026-09-23 with v0.1.0.

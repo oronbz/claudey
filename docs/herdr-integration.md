@@ -17,6 +17,15 @@ Verified against Herdr 0.8.2, socket protocol 20, on 2026-09-11.
   lifecycle. The action alone passes `--connect`, which also leaves a
   `connect-request` marker next to the context file; the app consumes it to
   override a disconnect the owner chose (see Controls).
+- The plugin's one build step runs `shepherd-install-app.sh` during
+  `herdr plugin install`. It finds `brew` on `PATH`, then at
+  `/opt/homebrew/bin/brew` and `/usr/local/bin/brew`, and installs the
+  `oronbz/tap/shepherd` cask or upgrades it when already installed. A missing
+  Homebrew or any `brew` failure exits non-zero, so Herdr aborts the install
+  and never registers the plugin without the app. Build steps get no Herdr
+  environment and must not change the manifest, so the script relies on
+  neither. `SHEPHERD_BREW_FALLBACKS` (colon-separated `brew` paths) replaces
+  the standard prefixes for `tools/test-plugin.sh`.
 - `Shepherd/Herdr/` is the adapter: newline-delimited JSON over a plain BSD
   Unix socket, `session.snapshot` for the baseline, `events.subscribe` for
   changes, quiet reconnection with backoff up to 30 s.
@@ -32,7 +41,9 @@ plugin and writes the app's path into `$(herdr plugin config-dir shepherd)/app-p
 which the launcher prefers; `SHEPHERD_APP=/path/to/Shepherd.app` overrides it
 and `open -g -b com.oronbz.Shepherd` is the last resort. `tools/uninstall.sh`
 reverses exactly that. Without the plugin, a developer launch falls back to
-`HERDR_SOCKET_PATH` and then `~/.config/herdr/herdr.sock`.
+`HERDR_SOCKET_PATH` and then `~/.config/herdr/herdr.sock`. A Homebrew install
+writes no `app-path`, so the launcher reaches the app in `/Applications`
+through that last resort.
 
 ## Controls
 
