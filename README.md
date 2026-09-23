@@ -1,8 +1,8 @@
-# Claudey
+# Shepherd
 
 A cute, quiet hand-drawn desktop companion for coding agents in Herdr.
 
-Claudey will live above ordinary macOS windows, react when agents work, finish, or need input, and take you back to the relevant Herdr pane when clicked.
+Shepherd will live above ordinary macOS windows, react when agents work, finish, or need input, and take you back to the relevant Herdr pane when clicked.
 
 ## Status
 
@@ -25,33 +25,33 @@ terminal forward.
 tools/install.sh
 ```
 
-This builds a Release `Claudey.app` into `~/Applications`, links the Herdr
+This builds a Release `Shepherd.app` into `~/Applications`, links the Herdr
 plugin from `plugin/`, and starts him. Re-running it rebuilds and replaces only
 those pieces; Herdr's own configuration, other plugins and everything under
 `~/.claude` are left alone. From then on the plugin's startup hook wakes him
-with each Herdr session and the `Connect Claudey` action wakes him on demand.
-Set `CLAUDEY_INSTALL_DIR` to install elsewhere.
+with each Herdr session and the `Connect Shepherd` action wakes him on demand.
+Set `SHEPHERD_INSTALL_DIR` to install elsewhere.
 
 ```bash
 tools/uninstall.sh
 ```
 
-removes the app, its login item, the plugin link, and Claudey's preferences
+removes the app, its login item, the plugin link, and Shepherd's preferences
 and support files, and nothing else. See
 [Herdr integration](docs/herdr-integration.md) for what the controls do, the
 state mapping, protocol notes, limitations and the live demo script.
 
 ## Developing him
 
-Open `Claudey/Claudey.xcodeproj` and run the `Claudey` scheme on `My Mac`. He
+Open `Shepherd/Shepherd.xcodeproj` and run the `Shepherd` scheme on `My Mac`. He
 appears in the lower right of the screen, with no Dock icon and no menu-bar
-icon; right-click him for his menu. `Claudey/Claudey/Resources/Avatars` links
+icon; right-click him for his menu. `Shepherd/Shepherd/Resources/Avatars` links
 the committed avatar packs in `assets/avatars`, which are drawn in code; see
 [the avatar README](assets/avatars/README.md). A development launch yields to an installed
 copy that is already running; quit that one first. Without the plugin he
 watches Herdr's default socket.
 
-Tests: `Claudey/ClaudeyTests` (Swift Testing) covers every avatar's frame map, animation
+Tests: `Shepherd/ShepherdTests` (Swift Testing) covers every avatar's frame map, animation
 timing, reaction selection, drag-versus-click, position restoration, realistic
 Herdr snapshots and events driving his reactions through a fake socket, and
 his menu's avatar, connect, disconnect and launch-at-login controls. Window behavior

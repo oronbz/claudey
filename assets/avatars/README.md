@@ -1,6 +1,6 @@
 # Avatars
 
-Every avatar Claudey can wear is drawn in code by `tools/avatars/`: ink outlines with a slight hand wobble and pencil hatching, rendered at 4× and downsampled. No image generator is involved, and rebuilding unchanged code reproduces the committed PNGs exactly.
+Every avatar Shepherd can wear is drawn in code by `tools/avatars/`: ink outlines with a slight hand wobble and pencil hatching, rendered at 4× and downsampled. No image generator is involved, and rebuilding unchanged code reproduces the committed PNGs exactly.
 
 | Avatar | Look |
 |---|---|
@@ -22,7 +22,7 @@ assets/avatars/<id>/
   hover.png
 ```
 
-`avatar.json` (version 2) names the avatar and, for each of the six reactions, its strip, `frameCount`, `playback` and ordered `frames` of `{index, durationMs}` where `index` is a zero-based cell in that strip. A strip is `frameCount × 128` by 128 px RGBA. `loop` repeats, `hold` plays once and keeps its last frame, and `once` ends after its last frame and hands back to whatever Claudey was showing.
+`avatar.json` (version 2) names the avatar and, for each of the six reactions, its strip, `frameCount`, `playback` and ordered `frames` of `{index, durationMs}` where `index` is a zero-based cell in that strip. A strip is `frameCount × 128` by 128 px RGBA. `loop` repeats, `hold` plays once and keeps its last frame, and `once` ends after its last frame and hands back to whatever Shepherd was showing.
 
 Cells share the ground anchor `(64, 112)`. Every grounded pose's lowest pixel sits on it; hop frames lift off it. Cells display at native 128 px.
 

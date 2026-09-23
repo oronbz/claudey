@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for the Claudey live demos. Source from a script run inside Herdr.
+# Shared helpers for the Shepherd live demos. Source from a script run inside Herdr.
 
 herdr="${HERDR_BIN_PATH:-herdr}"
 

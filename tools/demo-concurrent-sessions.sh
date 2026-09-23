@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Drive Claudey with two real Claude Code sessions inside the current Herdr tab.
-# Run from a Herdr pane while Claudey is running. Closes both demo panes at the
+# Drive Shepherd with two real Claude Code sessions inside the current Herdr tab.
+# Run from a Herdr pane while Shepherd is running. Closes both demo panes at the
 # end unless KEEP_PANES=1.
 set -euo pipefail
 source "$(dirname "$0")/lib/herdr-demo.sh"
 require_herdr_env
 
-a="${1:-claudey-demo-a}"
-b="${2:-claudey-demo-b}"
+a="${1:-shepherd-demo-a}"
+b="${2:-shepherd-demo-b}"
 timeout_ms=180000
 long_task="Without using any tools, write 40 numbered lines, each a different short haiku about the sea."
 question="Use the AskUserQuestion tool to ask me whether I prefer red or blue. Offer only those two options and do nothing else."
@@ -24,7 +24,7 @@ say "demo panes: $a=$pane_a $b=$pane_b"
 start_agent "$a" "$pane_a"
 start_agent "$b" "$pane_b"
 sleep 3
-say "both sessions idle: Claudey should show the aggregate of everything else Herdr runs"
+say "both sessions idle: Shepherd should show the aggregate of everything else Herdr runs"
 
 say "1/4 completion while another works: expect concentration, one hop when $b answers, then concentration again"
 prompt "$a" "$long_task"
