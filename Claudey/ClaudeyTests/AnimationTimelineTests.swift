@@ -4,7 +4,7 @@ import Testing
 struct AnimationTimelineTests {
     private let loop = AnimationTimeline(
         playback: .loop,
-        steps: [.init(id: 3, durationMs: 200), .init(id: 4, durationMs: 300)]
+        steps: [.init(index: 3, durationMs: 200), .init(index: 4, durationMs: 300)]
     )
 
     @Test func loopingHoldsEachFrameForItsDuration() {
@@ -27,7 +27,7 @@ struct AnimationTimelineTests {
     @Test func holdingKeepsTheFinalFrame() {
         let hold = AnimationTimeline(
             playback: .hold,
-            steps: [.init(id: 9, durationMs: 100), .init(id: 12, durationMs: 100)]
+            steps: [.init(index: 9, durationMs: 100), .init(index: 12, durationMs: 100)]
         )
 
         #expect(hold.frame(at: 0) == 9)
@@ -39,7 +39,7 @@ struct AnimationTimelineTests {
     @Test func playingOnceCompletesAfterTheFinalDuration() {
         let once = AnimationTimeline(
             playback: .once,
-            steps: [.init(id: 5, durationMs: 100), .init(id: 6, durationMs: 100)]
+            steps: [.init(index: 5, durationMs: 100), .init(index: 6, durationMs: 100)]
         )
 
         #expect(once.hasCompleted(at: 0.19) == false)
@@ -54,7 +54,7 @@ struct AnimationTimelineTests {
     }
 
     @Test func aHeldFinalFrameNeedsNoFurtherRedraw() {
-        let resting = AnimationTimeline(playback: .hold, steps: [.init(id: 13, durationMs: 1000)])
+        let resting = AnimationTimeline(playback: .hold, steps: [.init(index: 13, durationMs: 1000)])
 
         #expect(resting.timeUntilNextFrame(at: 2.0) == nil)
     }

@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Claudey · Soft Spark motion study</title>
+  <title>Claudey avatars</title>
   <link rel="stylesheet" href="preview.css">
 </head>
 <body>
   <main>
-    <header><p class="eyebrow">CLAUDEY / STUDY 01</p><h1>A little spark.<br>A little company.</h1><p class="intro">Six quiet reactions, one familiar face.</p></header>
+    <header><p class="eyebrow">CLAUDEY / AVATARS</p><h1>Ink, pencil.<br>A little company.</h1><p class="intro">Six quiet reactions, drawn in code.</p></header>
     <section class="controls" aria-label="Animation controls">
       <div id="animations" aria-label="Choose a reaction"></div>
       <div class="transport">
         <button id="pause" disabled>Pause</button><button id="replay" disabled>Replay</button>
+        <label>Avatar <select id="avatar"></select></label>
         <label>Scale <select id="scale"><option value="0.5">64 px · compact</option><option value="1" selected>128 px · desktop</option><option value="1.5">192 px · inspection</option></select></label>
         <label><input type="checkbox" id="hover"> React to hover</label>
       </div>
@@ -22,7 +23,7 @@
       <div class="stage dark"><span class="stage-label">AFTER HOURS</span><canvas width="128" height="128" aria-label="Claudey on a dark background"></canvas><span class="stage-foot">Midnight ink</span></div>
     </section>
     <div class="caption"><h2 id="name">Loading sprites…</h2><p id="description" role="status"></p><output id="frame"></output></div>
-    <footer><span>SOFT SPARK</span><p>Asset review only. Switch reactions at any moment to inspect transitions.<br>Finished returns to idle. Needs you waves once, then holds.</p><a href="../../assets/claudey/animations.json">Frame map ↗</a></footer>
+    <footer><span>AVATARS</span><p>Asset review only. Switch reactions at any moment to inspect transitions.<br>Finished returns to idle. Needs you waves once, then holds.</p><a href="../../../assets/avatars/">Frame maps ↗</a></footer>
   </main>
   <script type="module" src="preview.js"></script>
 </body>

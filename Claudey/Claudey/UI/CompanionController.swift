@@ -11,15 +11,15 @@ final class CompanionController {
 
     private var now: TimeInterval { ProcessInfo.processInfo.systemUptime }
 
-    init(catalog: AnimationCatalog, sheet: SpriteSheet, positions: CompanionPositionStore = CompanionPositionStore()) {
+    init(avatar: CompanionAvatar, positions: CompanionPositionStore = CompanionPositionStore()) {
         self.positions = positions
         let startedAt = ProcessInfo.processInfo.systemUptime
-        behavior = CompanionBehavior(catalog: catalog, startedAt: startedAt)
+        behavior = CompanionBehavior(catalog: avatar.catalog, startedAt: startedAt)
         director = CompanionDirector(behavior: behavior, startedAt: startedAt)
 
-        let size = catalog.desktopSize
+        let size = avatar.catalog.desktopSize
         panel = CompanionPanel(size: size)
-        spriteView = SpriteView(catalog: catalog, sheet: sheet)
+        spriteView = SpriteView(avatar: avatar)
         panel.contentView = spriteView
 
         spriteView.onHoverChange = { [weak self] isHovering in
@@ -58,6 +58,12 @@ final class CompanionController {
         render()
     }
 
+    func use(_ avatar: CompanionAvatar) {
+        behavior.use(avatar.catalog)
+        spriteView.use(avatar)
+        render()
+    }
+
     func show(_ animation: CompanionAnimation) {
         behavior.show(animation, at: now)
         render()
@@ -85,7 +91,7 @@ final class CompanionController {
 
     private func render() {
         let presentation = behavior.presentation(at: now)
-        spriteView.show(frameID: presentation.frameID)
+        spriteView.show(presentation)
         scheduleNextFrame()
     }
 

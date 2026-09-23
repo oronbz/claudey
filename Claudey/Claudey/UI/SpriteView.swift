@@ -6,15 +6,13 @@ final class SpriteView: NSView {
     var onDragEnd: (() -> Void)?
     var onClick: (() -> Void)?
 
-    private let catalog: AnimationCatalog
-    private let sheet: SpriteSheet
-    private var frameID = 0
+    private var avatar: CompanionAvatar
+    private var presentation = CompanionPresentation(animation: .idle, frameID: 0)
     private var interaction: PointerInteraction?
 
-    init(catalog: AnimationCatalog, sheet: SpriteSheet) {
-        self.catalog = catalog
-        self.sheet = sheet
-        super.init(frame: CGRect(origin: .zero, size: catalog.desktopSize))
+    init(avatar: CompanionAvatar) {
+        self.avatar = avatar
+        super.init(frame: CGRect(origin: .zero, size: avatar.catalog.desktopSize))
     }
 
     @available(*, unavailable)
@@ -22,15 +20,20 @@ final class SpriteView: NSView {
         fatalError("SpriteView is created in code")
     }
 
-    func show(frameID: Int) {
-        guard frameID != self.frameID else { return }
-        self.frameID = frameID
+    func use(_ avatar: CompanionAvatar) {
+        self.avatar = avatar
+        needsDisplay = true
+    }
+
+    func show(_ presentation: CompanionPresentation) {
+        guard presentation != self.presentation else { return }
+        self.presentation = presentation
         needsDisplay = true
     }
 
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext,
-              let cell = sheet.frame(frameID, in: catalog)
+              let cell = avatar.frame(presentation.frameID, of: presentation.animation)
         else { return }
 
         context.interpolationQuality = .none

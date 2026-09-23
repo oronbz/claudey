@@ -15,7 +15,7 @@ final class CompanionBehavior {
         var startedAt: TimeInterval
     }
 
-    private let catalog: AnimationCatalog
+    private var catalog: AnimationCatalog
     private var base: Playing
     private var transient: Playing?
     private var hovering: Playing?
@@ -27,6 +27,13 @@ final class CompanionBehavior {
             timeline: catalog.timeline(for: .idle) ?? AnimationTimeline(playback: .hold, steps: []),
             startedAt: startedAt
         )
+    }
+
+    func use(_ catalog: AnimationCatalog) {
+        self.catalog = catalog
+        base = replaying(base)
+        transient = transient.map(replaying)
+        hovering = hovering.map(replaying)
     }
 
     func show(_ animation: CompanionAnimation, at now: TimeInterval) {
@@ -77,6 +84,15 @@ final class CompanionBehavior {
     func timeUntilNextFrame(at now: TimeInterval) -> TimeInterval? {
         let playing = current(at: now)
         return playing.timeline.timeUntilNextFrame(at: now - playing.startedAt)
+    }
+
+    private func replaying(_ playing: Playing) -> Playing {
+        guard let steps = catalog.animation(for: playing.animation)?.steps else { return playing }
+        return Playing(
+            animation: playing.animation,
+            timeline: AnimationTimeline(playback: playing.timeline.playback, steps: steps),
+            startedAt: playing.startedAt
+        )
     }
 
     private func current(at now: TimeInterval) -> Playing {

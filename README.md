@@ -1,6 +1,6 @@
 # Claudey
 
-A cute, quiet pixel-art desktop companion for coding agents in Herdr.
+A cute, quiet hand-drawn desktop companion for coding agents in Herdr.
 
 Claudey will live above ordinary macOS windows, react when agents work, finish, or need input, and take you back to the relevant Herdr pane when clicked.
 
@@ -12,8 +12,8 @@ own right-click menu. Connected to Herdr, he concentrates while an agent works,
 hops once when a response ends, and waves then holds a questioning pose while
 an agent waits for you. Clicking him takes you to the Herdr pane behind his
 reaction and brings its Ghostty terminal forward. His right-click menu holds
-his only controls: connect to or disconnect from Herdr, launch at login (off
-until you turn it on), and quit.
+his only controls: pick his avatar (Block or Soft Spark), connect to or
+disconnect from Herdr, launch at login (off until you turn it on), and quit.
 
 ## Installing him
 
@@ -45,15 +45,16 @@ state mapping, protocol notes, limitations and the live demo script.
 
 Open `Claudey/Claudey.xcodeproj` and run the `Claudey` scheme on `My Mac`. He
 appears in the lower right of the screen, with no Dock icon and no menu-bar
-icon; right-click him for his menu. `Claudey/Claudey/Resources` links the committed sprite sheet and
-frame map from `assets/claudey`. A development launch yields to an installed
+icon; right-click him for his menu. `Claudey/Claudey/Resources/Avatars` links
+the committed avatar packs in `assets/avatars`, which are drawn in code; see
+[the avatar README](assets/avatars/README.md). A development launch yields to an installed
 copy that is already running; quit that one first. Without the plugin he
 watches Herdr's default socket.
 
-Tests: `Claudey/ClaudeyTests` (Swift Testing) covers the frame map, animation
+Tests: `Claudey/ClaudeyTests` (Swift Testing) covers every avatar's frame map, animation
 timing, reaction selection, drag-versus-click, position restoration, realistic
 Herdr snapshots and events driving his reactions through a fake socket, and
-his menu's connect, disconnect and launch-at-login controls. Window behavior
+his menu's avatar, connect, disconnect and launch-at-login controls. Window behavior
 and the installed flow are checked by hand — see
 [manual verification](docs/manual-verification.md).
 

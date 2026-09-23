@@ -270,7 +270,7 @@ struct ClickNavigationTests {
         harness.navigator.click(at: 3.1)
 
         #expect(harness.host.focusedPanes == [codex.paneID])
-        #expect(harness.behavior.presentation(at: 3.1).frameID == 12)
+        #expect(harness.behavior.presentation(at: 3.1).frameID == 2)
     }
 
     @Test func answeringThePinnedQuestionMovesTheClickToTheNextOne() throws {

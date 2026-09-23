@@ -93,7 +93,7 @@ struct ActivityDirectorTests {
 
         #expect(behavior.presentation(at: 1).animation == .needsYou)
         #expect(behavior.presentation(at: 60).animation == .needsYou)
-        #expect(behavior.presentation(at: 60).frameID == 12)
+        #expect(behavior.presentation(at: 60).frameID == 2)
     }
 
     @Test func aCompletionDoesNotInterruptAHeldNeedsYou() throws {

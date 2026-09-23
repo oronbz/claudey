@@ -1,0 +1,150 @@
+{
+  "version": 2,
+  "id": "soft-spark",
+  "name": "Soft Spark",
+  "cell": {
+    "width": 128,
+    "height": 128
+  },
+  "anchor": {
+    "x": 64,
+    "y": 112
+  },
+  "desktopScale": 1,
+  "animations": {
+    "idle": {
+      "strip": "idle.png",
+      "frameCount": 3,
+      "playback": "loop",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 1200
+        },
+        {
+          "index": 1,
+          "durationMs": 950
+        },
+        {
+          "index": 0,
+          "durationMs": 600
+        },
+        {
+          "index": 2,
+          "durationMs": 140
+        },
+        {
+          "index": 0,
+          "durationMs": 800
+        },
+        {
+          "index": 1,
+          "durationMs": 950
+        }
+      ]
+    },
+    "working": {
+      "strip": "working.png",
+      "frameCount": 2,
+      "playback": "loop",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 650
+        },
+        {
+          "index": 1,
+          "durationMs": 650
+        }
+      ]
+    },
+    "finished": {
+      "strip": "finished.png",
+      "frameCount": 5,
+      "playback": "once",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 130
+        },
+        {
+          "index": 1,
+          "durationMs": 110
+        },
+        {
+          "index": 2,
+          "durationMs": 150
+        },
+        {
+          "index": 1,
+          "durationMs": 100
+        },
+        {
+          "index": 3,
+          "durationMs": 130
+        },
+        {
+          "index": 4,
+          "durationMs": 380
+        }
+      ]
+    },
+    "needs-you": {
+      "strip": "needs-you.png",
+      "frameCount": 3,
+      "playback": "hold",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 180
+        },
+        {
+          "index": 1,
+          "durationMs": 180
+        },
+        {
+          "index": 0,
+          "durationMs": 180
+        },
+        {
+          "index": 1,
+          "durationMs": 180
+        },
+        {
+          "index": 0,
+          "durationMs": 180
+        },
+        {
+          "index": 2,
+          "durationMs": 600
+        }
+      ]
+    },
+    "resting": {
+      "strip": "resting.png",
+      "frameCount": 1,
+      "playback": "hold",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 1000
+        }
+      ]
+    },
+    "hover": {
+      "strip": "hover.png",
+      "frameCount": 2,
+      "playback": "loop",
+      "frames": [
+        {
+          "index": 0,
+          "durationMs": 450
+        },
+        {
+          "index": 1,
+          "durationMs": 450
+        }
+      ]
+    }
+  }
+}

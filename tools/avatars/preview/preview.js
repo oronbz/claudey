@@ -1,8 +1,11 @@
 export {};
 
 /** @typedef {'idle'|'working'|'finished'|'needs-you'|'resting'|'hover'} Reaction */
-/** @typedef {{playback: 'loop'|'once'|'hold', frames: {id: number, durationMs: number}[], previewReturnTo?: Reaction}} Animation */
-/** @typedef {{image: string, sheet: {width: number, height: number}, cell: {width: number, height: number}, frames: {x: number, y: number, width: number, height: number}[], animations: Record<Reaction, Animation>}} FrameMap */
+/** @typedef {{strip: string, frameCount: number, playback: 'loop'|'once'|'hold', frames: {index: number, durationMs: number}[]}} Animation */
+/** @typedef {{id: string, name: string, cell: {width: number, height: number}, animations: Record<Reaction, Animation>}} Avatar */
+
+const AVATARS = ['block', 'soft-spark'];
+const ROOT = '../../../assets/avatars/';
 
 const labels = {
   idle: ['Idle', 'A slow breath and an occasional blink.'],
@@ -23,6 +26,7 @@ const frameLabel = document.querySelector('#frame');
 const buttons = document.querySelector('#animations');
 const hover = /** @type {HTMLInputElement} */ (document.querySelector('input#hover'));
 const scale = /** @type {HTMLSelectElement} */ (document.querySelector('select#scale'));
+const picker = /** @type {HTMLSelectElement} */ (document.querySelector('select#avatar'));
 /** @type {Reaction} */
 let selected = 'idle';
 /** @type {Reaction} */
@@ -32,17 +36,36 @@ let paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let previousTime = 0;
 let hovering = false;
 
-try {
-  const response = await fetch('../../assets/claudey/animations.json');
-  if (!response.ok) throw new Error('Could not load the frame map.');
-  /** @type {FrameMap} */
-  const map = await response.json();
-  const sheet = new Image();
-  sheet.src = new URL('../../assets/claudey/' + map.image, location.href).href;
-  await sheet.decode();
-  if (sheet.width !== map.sheet.width || sheet.height !== map.sheet.height) {
-    throw new Error('Sprite sheet dimensions do not match the frame map.');
+/** @param {string} id */
+async function load(id) {
+  const response = await fetch(`${ROOT}${id}/avatar.json`);
+  if (!response.ok) throw new Error(`Could not load ${id}/avatar.json.`);
+  /** @type {Avatar} */
+  const avatar = await response.json();
+  /** @type {Record<string, HTMLImageElement>} */
+  const strips = {};
+  for (const [key, animation] of Object.entries(avatar.animations)) {
+    const image = new Image();
+    image.src = new URL(`${ROOT}${id}/${animation.strip}`, location.href).href;
+    await image.decode();
+    if (image.width !== animation.frameCount * avatar.cell.width || image.height !== avatar.cell.height) {
+      throw new Error(`${id}/${animation.strip} does not match its frame count.`);
+    }
+    strips[key] = image;
   }
+  return { avatar, strips };
+}
+
+try {
+  const loaded = await Promise.all(AVATARS.map(load));
+  let { avatar: map, strips } = loaded[0];
+  for (const [index, { avatar }] of loaded.entries()) {
+    picker.append(new Option(avatar.name, String(index)));
+  }
+  picker.addEventListener('change', () => {
+    ({ avatar: map, strips } = loaded[Number(picker.value)]);
+    render();
+  });
   for (const [key, [label]] of Object.entries(labels)) {
     const button = document.createElement('button');
     button.textContent = label;
@@ -69,7 +92,7 @@ try {
     const total = animation.frames.reduce((sum, frame) => sum + frame.durationMs, 0);
     if (elapsed >= total && animation.playback === 'once') {
       // The production app chooses its current aggregate state; this study returns to idle.
-      selected = animation.previewReturnTo;
+      selected = 'idle';
       start(selected);
       return;
     }
@@ -79,13 +102,13 @@ try {
       if (time < frame.durationMs) { current = frame; break; }
       time -= frame.durationMs;
     }
-    const rect = map.frames[current.id];
+    const { width, height } = map.cell;
     contexts.forEach((context, index) => {
       context.imageSmoothingEnabled = false;
       context.clearRect(0, 0, canvases[index].width, canvases[index].height);
-      context.drawImage(sheet, rect.x, rect.y, rect.width, rect.height, 0, 0, map.cell.width, map.cell.height);
+      context.drawImage(strips[active], current.index * width, 0, width, height, 0, 0, width, height);
     });
-    frameLabel.textContent = `Frame ${current.id} / ${animation.playback}${elapsed >= total && animation.playback === 'hold' ? ' · held' : ''}`;
+    frameLabel.textContent = `Frame ${current.index + 1} of ${animation.frameCount} / ${animation.playback}${elapsed >= total && animation.playback === 'hold' ? ' · held' : ''}`;
   }
 
   function tick(now) {
@@ -124,5 +147,5 @@ try {
   requestAnimationFrame(tick);
 } catch (error) {
   name.textContent = 'Preview unavailable';
-  description.textContent = `${error.message} Serve the repository over HTTP; see assets/claudey/README.md.`;
+  description.textContent = `${error.message} Serve the repository over HTTP; see assets/avatars/README.md.`;
 }

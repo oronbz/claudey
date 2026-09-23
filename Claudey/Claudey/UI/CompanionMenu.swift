@@ -4,23 +4,42 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
     let menu = NSMenu()
     var onQuit: () -> Void = { NSApp.terminate(nil) }
     var onShowReaction: (CompanionAnimation) -> Void = { _ in }
+    var onChooseAvatar: (Avatar) -> Void = { _ in }
 
     private let link: HerdrLink
     private let loginItem: LoginItemService
+    private let avatars: AvatarPreferenceStore
     private let connectionItem: NSMenuItem
     private let launchAtLoginItem: NSMenuItem
+    private let avatarItems: [NSMenuItem]
 
-    init(link: HerdrLink, loginItem: LoginItemService) {
+    init(link: HerdrLink, loginItem: LoginItemService, avatars: AvatarPreferenceStore, avatarNames: [(Avatar, String)]) {
         self.link = link
         self.loginItem = loginItem
+        self.avatars = avatars
         connectionItem = NSMenuItem(title: "", action: #selector(toggleConnection), keyEquivalent: "")
         launchAtLoginItem = NSMenuItem(title: "", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        avatarItems = avatarNames.map { avatar, name in
+            let item = NSMenuItem(title: name, action: #selector(chooseAvatar(_:)), keyEquivalent: "")
+            item.representedObject = avatar.rawValue
+            return item
+        }
         super.init()
 
         #if DEBUG
         menu.addItem(reactionsItem())
         menu.addItem(.separator())
         #endif
+
+        let avatarMenu = NSMenu()
+        for item in avatarItems {
+            item.target = self
+            avatarMenu.addItem(item)
+        }
+        let avatarItem = NSMenuItem(title: "Avatar", action: nil, keyEquivalent: "")
+        avatarItem.submenu = avatarMenu
+        menu.addItem(avatarItem)
+        menu.addItem(.separator())
 
         connectionItem.target = self
         launchAtLoginItem.target = self
@@ -61,7 +80,17 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
         refresh()
     }
 
+    @objc func chooseAvatar(_ sender: NSMenuItem) {
+        guard let avatar = (sender.representedObject as? String).flatMap(Avatar.init(rawValue:)) else { return }
+        avatars.avatar = avatar
+        onChooseAvatar(avatar)
+        refresh()
+    }
+
     private func refresh() {
+        for item in avatarItems {
+            item.state = item.representedObject as? String == avatars.avatar.rawValue ? .on : .off
+        }
         connectionItem.title = link.isEnabled ? "Disconnect from Herdr" : "Connect to Herdr"
         launchAtLoginItem.title = loginItem.requiresApproval
             ? "Launch at Login (approve in System Settings)"

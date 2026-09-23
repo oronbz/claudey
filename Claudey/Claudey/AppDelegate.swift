@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static let disableLaunchAtLoginArgument = "--disable-launch-at-login"
 
     private let loginItem = MainAppLoginItem()
+    private let avatars = AvatarPreferenceStore()
     private var companion: CompanionController?
     private var menu: CompanionMenuController?
     private var link: HerdrLink?
@@ -39,8 +40,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         do {
-            let catalog = try AnimationCatalog.bundled()
-            let companion = CompanionController(catalog: catalog, sheet: try SpriteSheet.bundled(catalog: catalog))
+            let library = try CompanionAvatar.bundledLibrary()
+            guard let current = library[avatars.avatar] else {
+                throw AnimationCatalog.Failure.missingResource(avatars.avatar.rawValue)
+            }
+            let companion = CompanionController(avatar: current)
             self.companion = companion
 
             guard !Self.isRunningTests else { return companion.show() }
@@ -54,8 +58,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 companion?.apply(event)
             }
             let link = HerdrLink(connection: herdr)
-            let menu = CompanionMenuController(link: link, loginItem: loginItem)
+            let menu = CompanionMenuController(
+                link: link,
+                loginItem: loginItem,
+                avatars: avatars,
+                avatarNames: Avatar.allCases.compactMap { avatar in library[avatar].map { (avatar, $0.name) } }
+            )
             menu.onShowReaction = { [weak companion] in companion?.show($0) }
+            menu.onChooseAvatar = { [weak companion] in library[$0].map { companion?.use($0) } }
             companion.attach(menu.menu)
             companion.navigate(through: HerdrNavigationHost(herdr: herdr, ghostty: GhosttyHost()))
             companion.show()

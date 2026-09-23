@@ -11,8 +11,8 @@ struct AnimationTimeline: Sendable {
 
     func frame(at elapsed: TimeInterval) -> Int {
         guard let last = steps.last else { return 0 }
-        guard let position = position(at: elapsed) else { return last.id }
-        return steps[position.step].id
+        guard let position = position(at: elapsed) else { return last.index }
+        return steps[position.step].index
     }
 
     func hasCompleted(at elapsed: TimeInterval) -> Bool {

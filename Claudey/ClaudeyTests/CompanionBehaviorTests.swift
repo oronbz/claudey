@@ -26,9 +26,9 @@ struct CompanionBehaviorTests {
         let companion = try behavior()
         companion.show(.working, at: 10)
 
-        #expect(companion.presentation(at: 10).frameID == 3)
-        #expect(companion.presentation(at: 10.7).frameID == 4)
-        #expect(companion.presentation(at: 11.4).frameID == 3)
+        #expect(companion.presentation(at: 10).frameID == 0)
+        #expect(companion.presentation(at: 10.7).frameID == 1)
+        #expect(companion.presentation(at: 11.4).frameID == 0)
     }
 
     @Test func aCompletionHopReturnsToTheOngoingState() throws {
@@ -46,7 +46,7 @@ struct CompanionBehaviorTests {
         companion.show(.needsYou, at: 0)
 
         #expect(companion.presentation(at: 60).animation == .needsYou)
-        #expect(companion.presentation(at: 60).frameID == 12)
+        #expect(companion.presentation(at: 60).frameID == 2)
     }
 
     @Test func hoveringPlaysTheHappyReactionAndThenRestoresTheState() throws {
@@ -55,11 +55,11 @@ struct CompanionBehaviorTests {
 
         companion.setHovering(true, at: 1)
         #expect(companion.presentation(at: 1).animation == .hover)
-        #expect(companion.presentation(at: 1).frameID == 14)
+        #expect(companion.presentation(at: 1).frameID == 0)
 
         companion.setHovering(false, at: 2)
         #expect(companion.presentation(at: 2).animation == .working)
-        #expect(companion.presentation(at: 2).frameID == 3)
+        #expect(companion.presentation(at: 2).frameID == 0)
     }
 
     @Test func hoveringDuringACompletionKeepsTheCelebration() throws {
@@ -89,6 +89,18 @@ struct CompanionBehaviorTests {
 
         #expect(abs((companion.timeUntilNextFrame(at: 0) ?? 0) - 0.65) < 1e-9)
         #expect(abs((companion.timeUntilNextFrame(at: 0.4) ?? 0) - 0.25) < 1e-9)
+    }
+
+    @Test func switchingAvatarKeepsTheReactionInProgress() throws {
+        let companion = try behavior()
+        companion.show(.working, at: 0)
+        companion.show(.finished, at: 5)
+
+        companion.use(try AnimationCatalog.bundled(.softSpark))
+
+        #expect(companion.presentation(at: 5.2).animation == .finished)
+        #expect(companion.presentation(at: 7).animation == .working)
+        #expect(companion.presentation(at: 7.7).frameID == 1)
     }
 
     @Test func aHeldPoseStopsAskingForRedraws() throws {

@@ -4,65 +4,83 @@ import Testing
 @testable import Claudey
 
 struct AnimationCatalogTests {
-    @Test func bundledCatalogMatchesTheAssetContract() throws {
-        let catalog = try AnimationCatalog.bundled()
+    @Test(arguments: Avatar.allCases)
+    func everyBundledAvatarMatchesTheAssetContract(_ avatar: Avatar) throws {
+        let catalog = try AnimationCatalog.bundled(avatar)
 
-        #expect(catalog.version == 1)
+        #expect(catalog.version == 2)
+        #expect(catalog.id == avatar.rawValue)
+        #expect(!catalog.name.isEmpty)
         #expect(catalog.cell.width == 128 && catalog.cell.height == 128)
-        #expect(catalog.frames.count == catalog.sheet.columns * catalog.sheet.rows)
         #expect(catalog.anchor.x == 64 && catalog.anchor.y == 112)
     }
 
-    @Test func bundledCatalogDefinesEveryReaction() throws {
-        let catalog = try AnimationCatalog.bundled()
+    @Test(arguments: Avatar.allCases)
+    func everyBundledAvatarDefinesEveryReaction(_ avatar: Avatar) throws {
+        let catalog = try AnimationCatalog.bundled(avatar)
 
         for animation in CompanionAnimation.allCases {
-            #expect(catalog.animations[animation.rawValue] != nil, "missing \(animation.rawValue)")
+            #expect(catalog.animation(for: animation) != nil, "\(avatar) is missing \(animation.rawValue)")
         }
     }
 
-    @Test func bundledSpriteSheetLoadsAtTheDeclaredSize() throws {
-        let catalog = try AnimationCatalog.bundled()
-        let sheet = try SpriteSheet.bundled(catalog: catalog)
+    @Test(arguments: Avatar.allCases)
+    func everyFrameOfEveryAvatarLoads(_ avatar: Avatar) throws {
+        let loaded = try CompanionAvatar.bundled(avatar)
 
-        #expect(Int(sheet.pixelSize.width) == catalog.sheet.width)
-        #expect(Int(sheet.pixelSize.height) == catalog.sheet.height)
+        for animation in CompanionAnimation.allCases {
+            let definition = try #require(loaded.catalog.animation(for: animation))
+            for index in 0..<definition.frameCount {
+                let frame = try #require(loaded.frame(index, of: animation))
+                #expect(frame.width == 128 && frame.height == 128)
+            }
+        }
     }
 
-    @Test func rejectsFrameIdentifiersOutsideTheSheet() throws {
-        let json = """
-        {
-          "version": 1, "image": "sprites.png",
-          "sheet": {"width": 256, "height": 128, "columns": 2, "rows": 1},
-          "cell": {"width": 128, "height": 128},
-          "anchor": {"x": 64, "y": 112},
-          "frames": [
-            {"x": 0, "y": 0, "width": 128, "height": 128},
-            {"x": 128, "y": 0, "width": 128, "height": 128}
-          ],
-          "animations": {"idle": {"playback": "loop", "frames": [{"id": 7, "durationMs": 100}]}}
-        }
-        """
+    @Test func avatarsHaveDistinctNames() throws {
+        let names = try Avatar.allCases.map { try AnimationCatalog.bundled($0).name }
 
-        #expect(throws: AnimationCatalog.Failure.unknownFrame(animation: "idle", id: 7)) {
-            try AnimationCatalog(json: Data(json.utf8))
+        #expect(Set(names).count == names.count)
+    }
+
+    @Test func rejectsAStripWhoseSizeDisagreesWithItsFrameCount() throws {
+        let catalog = try AnimationCatalog(json: Data(Self.catalog(frameCount: 2, index: 0, durationMs: 100).utf8))
+        let oneCell = try #require(
+            CGContext(data: nil, width: 128, height: 128, bitsPerComponent: 8, bytesPerRow: 0,
+                      space: CGColorSpaceCreateDeviceRGB(),
+                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage()
+        )
+
+        #expect(throws: AnimationCatalog.Failure.stripSizeMismatch("test-idle.png")) {
+            try CompanionAvatar(avatar: .block, catalog: catalog, strips: [.idle: oneCell])
+        }
+    }
+
+    @Test func rejectsFrameIndicesOutsideTheStrip() throws {
+        #expect(throws: AnimationCatalog.Failure.unknownFrame(animation: "idle", index: 7)) {
+            try AnimationCatalog(json: Data(Self.catalog(frameCount: 2, index: 7, durationMs: 100).utf8))
         }
     }
 
     @Test func rejectsNonPositiveDurations() throws {
-        let json = """
+        #expect(throws: AnimationCatalog.Failure.invalidDuration(animation: "idle", durationMs: 0)) {
+            try AnimationCatalog(json: Data(Self.catalog(frameCount: 1, index: 0, durationMs: 0).utf8))
+        }
+    }
+
+    private static func catalog(frameCount: Int, index: Int, durationMs: Int) -> String {
+        """
         {
-          "version": 1, "image": "sprites.png",
-          "sheet": {"width": 128, "height": 128, "columns": 1, "rows": 1},
+          "version": 2, "id": "test", "name": "Test",
           "cell": {"width": 128, "height": 128},
           "anchor": {"x": 64, "y": 112},
-          "frames": [{"x": 0, "y": 0, "width": 128, "height": 128}],
-          "animations": {"idle": {"playback": "loop", "frames": [{"id": 0, "durationMs": 0}]}}
+          "animations": {
+            "idle": {
+              "strip": "test-idle.png", "frameCount": \(frameCount), "playback": "loop",
+              "frames": [{"index": \(index), "durationMs": \(durationMs)}]
+            }
+          }
         }
         """
-
-        #expect(throws: AnimationCatalog.Failure.invalidDuration(animation: "idle", durationMs: 0)) {
-            try AnimationCatalog(json: Data(json.utf8))
-        }
     }
 }

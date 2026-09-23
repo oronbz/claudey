@@ -40,7 +40,9 @@ struct CompanionMenuTests {
         let suite = "claudey-menu-\(UUID().uuidString)"
         let link: HerdrLink
         let menu: CompanionMenuController
+        let avatars: AvatarPreferenceStore
         var quits = 0
+        var chosenAvatars: [Avatar] = []
 
         init() throws {
             behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
@@ -48,7 +50,14 @@ struct CompanionMenuTests {
             defaults = UserDefaults(suiteName: suite)!
             let connection = HerdrConnection(transport: transport, scheduler: scheduler) { "/tmp/herdr.sock" }
             link = HerdrLink(connection: connection, preference: ConnectionPreferenceStore(defaults: defaults)) { false }
-            menu = CompanionMenuController(link: link, loginItem: loginItem)
+            avatars = AvatarPreferenceStore(defaults: defaults)
+            menu = CompanionMenuController(
+                link: link,
+                loginItem: loginItem,
+                avatars: avatars,
+                avatarNames: try Avatar.allCases.map { ($0, try AnimationCatalog.bundled($0).name) }
+            )
+            menu.onChooseAvatar = { [unowned self] in chosenAvatars.append($0) }
             connection.onEvent = { [unowned self] event in director.apply(event, at: scheduler.now) }
             menu.onQuit = { [unowned self] in quits += 1 }
             link.activate()
@@ -73,6 +82,18 @@ struct CompanionMenuTests {
             menu.menu.performActionForItem(at: menu.menu.index(of: item))
         }
 
+        func avatarItems() throws -> [NSMenuItem] {
+            let submenu = try #require(try item("Avatar").submenu)
+            submenu.update()
+            return submenu.items
+        }
+
+        func chooseAvatar(_ name: String) throws {
+            let submenu = try #require(try item("Avatar").submenu)
+            let item = try #require(submenu.items.first { $0.title == name })
+            submenu.performActionForItem(at: submenu.index(of: item))
+        }
+
         func goLive(agents: [String]) throws {
             let lifecycle = try #require(transport.liveLifecycle)
             lifecycle.acknowledge()
@@ -83,12 +104,31 @@ struct CompanionMenuTests {
 
     private let working = HerdrFixtures.agent(pane: "w1:p1", terminal: "term_a", status: "working", session: "sess-a", seq: 40)
 
-    @Test func offersOnlyConnectionLaunchAtLoginAndQuit() throws {
+    @Test func offersOnlyAvatarConnectionLaunchAtLoginAndQuit() throws {
         let harness = try Harness()
 
         let titles = harness.titles.filter { !$0.contains("development") }
 
-        #expect(titles == ["Disconnect from Herdr", "Launch at Login", "Quit Claudey"])
+        #expect(titles == ["Avatar", "Disconnect from Herdr", "Launch at Login", "Quit Claudey"])
+    }
+
+    @Test func theAvatarMenuListsEveryAvatarAndChecksBlockByDefault() throws {
+        let harness = try Harness()
+
+        let items = try harness.avatarItems()
+
+        #expect(items.map(\.title) == ["Block", "Soft Spark"])
+        #expect(items.map(\.state) == [.on, .off])
+    }
+
+    @Test func choosingAnAvatarSwapsHimAndIsRemembered() throws {
+        let harness = try Harness()
+
+        try harness.chooseAvatar("Soft Spark")
+
+        #expect(harness.chosenAvatars == [.softSpark])
+        #expect(try harness.avatarItems().map(\.state) == [.off, .on])
+        #expect(AvatarPreferenceStore(defaults: harness.defaults).avatar == .softSpark)
     }
 
     @Test func disconnectAndConnectSwapPlaces() throws {
