@@ -10,9 +10,11 @@ Shepherd himself is the whole interface, and right-clicking him opens his menu.
 
 ## Remove launch at login (#4)
 
-- [ ] Right-clicking him offers only Avatar, Disconnect from Herdr / Connect
+Verified by the owner on 2026-09-23.
+
+- [x] Right-clicking him offers only Avatar, Disconnect from Herdr / Connect
       to Herdr and Quit Shepherd, and the connection item swaps its title when
-      chosen.
-- [ ] `tools/uninstall.sh` quits him, unlinks the plugin, and removes the app,
+      chosen. A Debug build also shows the development-only Reaction submenu.
+- [x] `tools/uninstall.sh` quits him, unlinks the plugin, and removes the app,
       preferences, support files and the plugin config dir without launching
       the app; Herdr's config, other plugins and `~/.claude` are untouched.
