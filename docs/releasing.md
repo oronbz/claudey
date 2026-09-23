@@ -26,14 +26,23 @@ One number names a release: the app's `MARKETING_VERSION` (every target in
    gh release create v<version> .build/release/Shepherd.zip --title "Shepherd v<version>" --generate-notes
    ```
 
-4. In the tap, set `version` and `sha256` in `Casks/shepherd.rb`, then check
-   and publish it:
+4. Bump the cask in Homebrew's own clone of the tap, because
+   `brew audit oronbz/tap/shepherd` reads that clone and not any other checkout
+   of `oronbz/homebrew-tap`:
+
+   ```bash
+   cd "$(brew --repo oronbz/tap)" && git pull --ff-only
+   ```
+
+   Set `version` and `sha256` in `Casks/shepherd.rb`, then check and publish it:
 
    ```bash
    brew style Casks/shepherd.rb
    brew audit --cask --online oronbz/tap/shepherd
    git commit -am "Update shepherd to <version>" && git push
    ```
+
+   Pull any other checkout of the tap afterwards.
 
 5. Run the Homebrew checks in [manual verification](manual-verification.md).
 
