@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Track specs and issues in local Markdown under `.scratch/`.
+Track specs and issues as GitHub issues in `oronbz/shepherd`, using the `gh` CLI.
 Before reading or publishing issues, read `docs/agents/issue-tracker.md`.
 
 ### Triage labels
