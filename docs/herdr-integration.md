@@ -47,18 +47,14 @@ issue 02 (a hidden avatar has nothing to right-click), so presence is quit.
   Shepherd` action (which `tools/install.sh` also uses to start him), reads a
   fresh snapshot: current activity is shown and nothing that happened while
   disconnected is celebrated. `HerdrLink` holds this rule.
-- **Launch at Login.** Off until turned on. It uses `SMAppService.mainApp`, so
-  the item appears under System Settings › General › Login Items and points at
-  the installed bundle; the menu re-reads the real status each time it opens,
-  and a registration macOS wants approved opens that settings pane instead of
-  claiming success. Re-run `tools/install.sh` after moving the app.
 - **Quit Shepherd.** Stops the app. Nothing relaunches it: the plugin's hook is
   a one-shot `open`, there is no launch agent, and retry lives inside the
   process that just ended. The next Herdr session or the Connect action
   starts him again.
-- `tools/uninstall.sh` launches the app once with `--disable-launch-at-login`
-  before removing it, because only the app itself may unregister its login
-  item.
+
+He has no launch-at-login option: he only reacts to sessions in Herdr, and the
+plugin's startup hook and `Connect Shepherd` action already start him when
+there is something to watch.
 
 ## Translation
 
@@ -194,9 +190,6 @@ are ignored.
 - The installed app is ad-hoc signed for local use only; there is no
   notarisation, release channel or App Store delivery. Ghostty's Automation
   permission is granted to this bundle id and is reset by `tools/uninstall.sh`.
-- The login item records the installed bundle's path. Moving or deleting the
-  app without `tools/uninstall.sh` leaves a dangling entry in Login Items
-  until the app is put back and the item toggled off.
 
 ## Live demo
 
@@ -214,5 +207,5 @@ debug build every activity event is logged as `Shepherd activity:` and every
 click's result as `Shepherd navigation:` in the Xcode console, and
 `kill -USR1 $(pgrep -x Shepherd)` performs the same navigation as a click so
 the path can be driven from a script; `kill -USR2` toggles his connect/
-disconnect menu item and `kill -INFO` toggles launch at login the same way.
+disconnect menu item the same way.
 `tools/install.sh` accepts `SHEPHERD_CONFIGURATION=Debug` for such runs.

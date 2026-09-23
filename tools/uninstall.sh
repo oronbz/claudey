@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Remove what tools/install.sh put on this Mac: the running app, its login
-# item, the Herdr plugin link, the app bundle, and Shepherd's own preferences
-# and support files. Herdr's config, other plugins and ~/.claude stay as they
+# Remove what tools/install.sh put on this Mac: the running app, the Herdr
+# plugin link, the app bundle, and Shepherd's own preferences and support
+# files. Herdr's config, other plugins and ~/.claude stay as they
 # are; the build products under .build/ in this checkout are kept too.
 set -euo pipefail
 
@@ -24,11 +24,6 @@ case "$app" in
 esac
 
 quit_shepherd
-
-if [ -d "$app" ]; then
-  echo "turning launch at login off"
-  open -W -g -a "$app" --args --disable-launch-at-login || echo "could not launch $app to disable launch at login; check System Settings > Login Items" >&2
-fi
 
 if shepherd_plugin_linked; then
   echo "unlinking the Herdr plugin"

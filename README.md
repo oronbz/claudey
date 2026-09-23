@@ -13,7 +13,9 @@ hops once when a response ends, and waves then holds a questioning pose while
 an agent waits for you. Clicking him takes you to the Herdr pane behind his
 reaction and brings its Ghostty terminal forward. His right-click menu holds
 his only controls: pick his avatar (Block, Soft Spark, Ram or Catpuccino), connect to or
-disconnect from Herdr, launch at login (off until you turn it on), and quit.
+disconnect from Herdr, and quit. He never starts at login: the plugin's
+startup hook or `Connect Shepherd` action starts him, or you launch him by
+hand.
 
 ## Installing him
 
@@ -36,8 +38,8 @@ Set `SHEPHERD_INSTALL_DIR` to install elsewhere.
 tools/uninstall.sh
 ```
 
-removes the app, its login item, the plugin link, and Shepherd's preferences
-and support files, and nothing else. See
+removes the app, the plugin link, and Shepherd's preferences and support
+files, and nothing else. See
 [Herdr integration](docs/herdr-integration.md) for what the controls do, the
 state mapping, protocol notes, limitations and the live demo script.
 
@@ -54,7 +56,7 @@ watches Herdr's default socket.
 Tests: `Shepherd/ShepherdTests` (Swift Testing) covers every avatar's frame map, animation
 timing, reaction selection, drag-versus-click, position restoration, realistic
 Herdr snapshots and events driving his reactions through a fake socket, and
-his menu's avatar, connect, disconnect and launch-at-login controls. Window behavior
+his menu's avatar, connect, disconnect and quit controls. Window behavior
 and the installed flow are checked by hand — see
 [manual verification](docs/manual-verification.md).
 

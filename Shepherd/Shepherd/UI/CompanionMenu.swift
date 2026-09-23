@@ -7,18 +7,14 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
     var onChooseAvatar: (Avatar) -> Void = { _ in }
 
     private let link: HerdrLink
-    private let loginItem: LoginItemService
     private let avatars: AvatarPreferenceStore
     private let connectionItem: NSMenuItem
-    private let launchAtLoginItem: NSMenuItem
     private let avatarItems: [NSMenuItem]
 
-    init(link: HerdrLink, loginItem: LoginItemService, avatars: AvatarPreferenceStore, avatarNames: [(Avatar, String)]) {
+    init(link: HerdrLink, avatars: AvatarPreferenceStore, avatarNames: [(Avatar, String)]) {
         self.link = link
-        self.loginItem = loginItem
         self.avatars = avatars
         connectionItem = NSMenuItem(title: "", action: #selector(toggleConnection), keyEquivalent: "")
-        launchAtLoginItem = NSMenuItem(title: "", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         avatarItems = avatarNames.map { avatar, name in
             let item = NSMenuItem(title: name, action: #selector(chooseAvatar(_:)), keyEquivalent: "")
             item.representedObject = avatar.rawValue
@@ -42,9 +38,7 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
         menu.addItem(.separator())
 
         connectionItem.target = self
-        launchAtLoginItem.target = self
         menu.addItem(connectionItem)
-        menu.addItem(launchAtLoginItem)
         menu.addItem(.separator())
 
         let quit = NSMenuItem(title: "Quit Shepherd", action: #selector(quit), keyEquivalent: "")
@@ -54,8 +48,6 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
         refresh()
     }
 
-    /// Validation runs each time the menu opens, which is when a login item
-    /// toggled in System Settings has to be reflected.
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         refresh()
         return true
@@ -63,20 +55,6 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
 
     @objc func toggleConnection() {
         if link.isEnabled { link.disconnect() } else { link.connect() }
-        refresh()
-    }
-
-    @objc func toggleLaunchAtLogin() {
-        do {
-            if loginItem.isEnabled {
-                try loginItem.unregister()
-            } else {
-                try loginItem.register()
-                if loginItem.requiresApproval { loginItem.openApprovalSettings() }
-            }
-        } catch {
-            NSLog("Shepherd could not change launch at login: %@", String(describing: error))
-        }
         refresh()
     }
 
@@ -92,10 +70,6 @@ final class CompanionMenuController: NSObject, NSMenuItemValidation {
             item.state = item.representedObject as? String == avatars.avatar.rawValue ? .on : .off
         }
         connectionItem.title = link.isEnabled ? "Disconnect from Herdr" : "Connect to Herdr"
-        launchAtLoginItem.title = loginItem.requiresApproval
-            ? "Launch at Login (approve in System Settings)"
-            : "Launch at Login"
-        launchAtLoginItem.state = loginItem.isEnabled ? .on : .off
     }
 
     @objc private func quit() {

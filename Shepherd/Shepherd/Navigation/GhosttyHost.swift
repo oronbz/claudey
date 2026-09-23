@@ -7,7 +7,7 @@ import Carbon
 /// exposes. AppleScript runs on its own queue so a permission dialog never
 /// freezes the animation; a refusal is remembered so macOS is not asked twice.
 final class GhosttyHost {
-    static let bundleID = "com.mitchellh.ghostty"
+    nonisolated static let bundleID = "com.mitchellh.ghostty"
 
     private let queue = DispatchQueue(label: "com.oronbz.Shepherd.ghostty")
     private nonisolated(unsafe) var automationRefused = false

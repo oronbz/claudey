@@ -13,11 +13,6 @@ struct ShepherdApp {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    /// `tools/uninstall.sh` launches the app once with this argument so the
-    /// login item is removed by the only party allowed to remove it.
-    static let disableLaunchAtLoginArgument = "--disable-launch-at-login"
-
-    private let loginItem = MainAppLoginItem()
     private let avatars = AvatarPreferenceStore()
     private var companion: CompanionController?
     private var menu: CompanionMenuController?
@@ -28,10 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-
-        if CommandLine.arguments.contains(Self.disableLaunchAtLoginArgument) {
-            return disableLaunchAtLoginAndQuit()
-        }
 
         guard Self.isRunningTests || Self.isTheOnlyInstance else {
             NSLog("Shepherd is already running; leaving the existing companion in place")
@@ -60,7 +51,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let link = HerdrLink(connection: herdr)
             let menu = CompanionMenuController(
                 link: link,
-                loginItem: loginItem,
                 avatars: avatars,
                 avatarNames: Avatar.allCases.compactMap { avatar in library[avatar].map { (avatar, $0.name) } }
             )
@@ -88,32 +78,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
-    private func disableLaunchAtLoginAndQuit() {
-        if loginItem.isEnabled || loginItem.requiresApproval {
-            do {
-                try loginItem.unregister()
-                NSLog("Shepherd launch at login disabled")
-            } catch {
-                NSLog("Shepherd could not disable launch at login: %@", String(describing: error))
-            }
-        } else {
-            NSLog("Shepherd launch at login was already off")
-        }
-        NSApp.terminate(nil)
-    }
-
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         true
     }
 
     #if DEBUG
-    /// From a script, `kill -USR1 $(pgrep -x Shepherd)` clicks him, `-USR2`
-    /// chooses his connect/disconnect menu item and `-INFO` toggles launch at
-    /// login, so the menu's effects can be driven without a pointer.
+    /// From a script, `kill -USR1 $(pgrep -x Shepherd)` clicks him and `-USR2`
+    /// chooses his connect/disconnect menu item, so the menu's effects can be
+    /// driven without a pointer.
     private func listenForScriptedControls() {
         listen(to: SIGUSR1) { $0.companion?.click() }
         listen(to: SIGUSR2) { $0.menu?.toggleConnection() }
-        listen(to: SIGINFO) { $0.menu?.toggleLaunchAtLogin() }
     }
 
     private func listen(to signalNumber: Int32, _ handler: @escaping (AppDelegate) -> Void) {

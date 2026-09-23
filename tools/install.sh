@@ -63,6 +63,6 @@ fi
 cat <<MSG
 Shepherd is installed. He starts with each Herdr session through the plugin's
 startup hook, and the "Connect Shepherd" action wakes him at any time.
-Right-click him for Connect/Disconnect from Herdr, Launch at Login (off until
-you turn it on) and Quit. Remove him with tools/uninstall.sh.
+Right-click him to pick his avatar, connect to or disconnect from Herdr, or
+quit. Remove him with tools/uninstall.sh.
 MSG

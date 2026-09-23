@@ -19,7 +19,7 @@
 - Character: a tiny warm orange fluffy creature with stubby feet, expressive dark eyes, and one distinctive tuft.
 - Animations: idle breathing/blinking, working concentration, completion hop, questioning wave, uncertain/resting pose, and happy hover reaction.
 - No sound or voice in the first version.
-- The Herdr plugin starts or connects to the companion and supplies connection context, replacing direct Claude Code hook setup. Do not alter the user's Claude hooks. Provide disconnect; menu-bar controls offer hide/show and quit. Launch at login is available, initially off.
+- The Herdr plugin starts or connects to the companion and supplies connection context, replacing direct Claude Code hook setup. Do not alter the user's Claude hooks. Provide disconnect; his right-click menu offers his avatar, connect or disconnect, and quit. Shepherd starts only through Herdr (the plugin's startup hook or `Connect Shepherd` action) or by hand, never at login.
 
 ## Implementation plan for final review
 
