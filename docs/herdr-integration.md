@@ -187,9 +187,10 @@ are ignored.
 - The completion hop keeps its target for the one second it plays. A click
   after that follows the most-recently-active rule, which usually still names
   the same session.
-- The installed app is ad-hoc signed for local use only; there is no
-  notarisation, release channel or App Store delivery. Ghostty's Automation
-  permission is granted to this bundle id and is reset by `tools/uninstall.sh`.
+- The app is ad-hoc signed, both from `tools/install.sh` and in the Homebrew
+  cask (see [releasing](releasing.md)); there is no notarisation or App Store
+  delivery. Ghostty's Automation permission is granted to this bundle id and
+  is reset by `tools/uninstall.sh`, not by the cask's zap.
 
 ## Live demo
 

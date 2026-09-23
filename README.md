@@ -43,6 +43,10 @@ files, and nothing else. See
 [Herdr integration](docs/herdr-integration.md) for what the controls do, the
 state mapping, protocol notes, limitations and the live demo script.
 
+A developer install and a Homebrew install of Shepherd must not coexist: both
+share one bundle id. Remove one before installing the other; see
+[releasing](docs/releasing.md).
+
 ## Developing him
 
 Open `Shepherd/Shepherd.xcodeproj` and run the `Shepherd` scheme on `My Mac`. He
@@ -65,3 +69,4 @@ ask for that no test can reach are listed in
 - [Domain glossary](CONTEXT.md)
 - [Architecture decision](docs/adr/0002-package-as-a-herdr-plugin-and-companion.md)
 - [Herdr integration](docs/herdr-integration.md)
+- [Releasing](docs/releasing.md)
