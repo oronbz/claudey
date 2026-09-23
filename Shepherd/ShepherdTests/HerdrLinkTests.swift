@@ -16,7 +16,7 @@ struct HerdrLinkTests {
         private(set) var link: HerdrLink!
 
         init() throws {
-            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
             director = CompanionDirector(behavior: behavior, startedAt: 0)
             defaults = UserDefaults(suiteName: suite)!
             link = makeLink()

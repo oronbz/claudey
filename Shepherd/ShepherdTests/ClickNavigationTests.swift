@@ -24,7 +24,7 @@ struct ClickNavigationTests {
         var outcomes: [NavigationOutcome] = []
 
         init() throws {
-            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
             director = CompanionDirector(behavior: behavior, startedAt: 0)
             navigator = ClickNavigator(director: director, host: host)
             navigator.onOutcome = { [unowned self] in outcomes.append($0) }
