@@ -24,16 +24,18 @@ echo "building Shepherd $app_version (Release)"
 rm -rf "$out"
 mkdir -p "$out"
 xcodebuild -project "$project" -scheme Shepherd -configuration Release \
-  -derivedDataPath "$derived_data" -quiet build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
+  -destination "generic/platform=macOS" -derivedDataPath "$derived_data" -quiet build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
 built="$derived_data/Build/Products/Release/Shepherd.app"
 [ -d "$built" ] || { echo "build produced no app at $built" >&2; exit 1; }
 codesign --verify --deep --strict "$built"
+archs="$(lipo -archs "$built/Contents/MacOS/Shepherd")"
 
 ditto -c -k --sequesterRsrc --keepParent "$built" "$zip"
 sha256="$(shasum -a 256 "$zip" | awk '{ print $1 }')"
 
 cat <<MSG
 version: $app_version
+archs:   $archs
 zip:     $zip
 sha256:  $sha256
 
