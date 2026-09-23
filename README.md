@@ -56,13 +56,12 @@ watches Herdr's default socket.
 Tests: `Shepherd/ShepherdTests` (Swift Testing) covers every avatar's frame map, animation
 timing, reaction selection, drag-versus-click, position restoration, realistic
 Herdr snapshots and events driving his reactions through a fake socket, and
-his menu's avatar, connect, disconnect and quit controls. Window behavior
-and the installed flow are checked by hand — see
+his menu's avatar, connect, disconnect and quit controls. Checks the issues
+ask for that no test can reach are listed in
 [manual verification](docs/manual-verification.md).
 
 ## Project docs
 
-- [Design](docs/design.md)
 - [Domain glossary](CONTEXT.md)
 - [Architecture decision](docs/adr/0002-package-as-a-herdr-plugin-and-companion.md)
 - [Herdr integration](docs/herdr-integration.md)
