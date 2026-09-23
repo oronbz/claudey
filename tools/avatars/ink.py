@@ -88,9 +88,10 @@ def scale(pts, pivot, sx, sy):
 
 
 class Canvas:
-    def __init__(self, hatch_dark, hatch_light):
+    def __init__(self, hatch_dark, hatch_light, ink=INK):
         self.image = Image.new('RGBA', (CELL * SS, CELL * SS), (0, 0, 0, 0))
         self.hatch_colours = hatch_dark, hatch_light
+        self.ink = ink
 
     def mask(self, pts):
         m = Image.new('L', self.image.size, 0)
@@ -155,7 +156,7 @@ class Canvas:
         region = self.mask(pts)
         self.paint(fill, region)
         self.hatch(region, rng)
-        self.paint(INK, self.stroke_mask(pts, line, rng))
+        self.paint(self.ink, self.stroke_mask(pts, line, rng))
 
     def silhouette(self, region, rng, fill, line=LINE):
         self.paint(fill, region)
@@ -163,10 +164,10 @@ class Canvas:
         blurred = region.filter(ImageFilter.GaussianBlur(line * SS * .37))
         outer = blurred.point(lambda v: 255 if v > 22 else 0)
         inner = blurred.point(lambda v: 255 if v > 233 else 0)
-        self.paint(INK, ImageChops.subtract(outer, inner))
+        self.paint(self.ink, ImageChops.subtract(outer, inner))
 
-    def line(self, pts, width, rng, colour=INK):
-        self.paint(colour, self.stroke_mask(pts, width, rng, closed=False, jitter=.1))
+    def line(self, pts, width, rng, colour=None):
+        self.paint(colour or self.ink, self.stroke_mask(pts, width, rng, closed=False, jitter=.1))
 
     def rim(self):
         """A cream sticker border so ink and effects still read on dark desktops."""

@@ -14,10 +14,11 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).parent))
 
 import block
+import ram
 import soft_spark
 from ink import CELL, GROUND
 
-AVATARS = (block, soft_spark)
+AVATARS = (block, soft_spark, ram)
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'assets' / 'avatars'
 PAPER = (237, 235, 231, 255)

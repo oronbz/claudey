@@ -12,7 +12,7 @@ own right-click menu. Connected to Herdr, he concentrates while an agent works,
 hops once when a response ends, and waves then holds a questioning pose while
 an agent waits for you. Clicking him takes you to the Herdr pane behind his
 reaction and brings its Ghostty terminal forward. His right-click menu holds
-his only controls: pick his avatar (Block or Soft Spark), connect to or
+his only controls: pick his avatar (Block, Soft Spark or Ram), connect to or
 disconnect from Herdr, launch at login (off until you turn it on), and quit.
 
 ## Installing him
