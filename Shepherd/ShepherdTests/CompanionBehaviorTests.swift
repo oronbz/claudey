@@ -3,7 +3,7 @@ import Testing
 
 struct CompanionBehaviorTests {
     private func behavior() throws -> CompanionBehavior {
-        CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+        CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
     }
 
     @Test func restsInIdleUntilSomethingElseIsShown() throws {

@@ -3,12 +3,12 @@ import Foundation
 import ImageIO
 
 enum Avatar: String, CaseIterable, Sendable {
+    case ram
     case block
     case softSpark = "soft-spark"
-    case ram
     case catpuccino
 
-    static let standard = Avatar.block
+    static let standard = Avatar.ram
 
     var resourceDirectory: String { "Avatars/\(rawValue)" }
 }

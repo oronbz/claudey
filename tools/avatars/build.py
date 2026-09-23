@@ -19,7 +19,7 @@ import ram
 import soft_spark
 from ink import CELL, GROUND
 
-AVATARS = (block, soft_spark, ram, catpuccino)
+AVATARS = (ram, block, soft_spark, catpuccino)
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'assets' / 'avatars'
 PAPER = (237, 235, 231, 255)

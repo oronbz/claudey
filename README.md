@@ -12,7 +12,7 @@ own right-click menu. Connected to Herdr, he concentrates while an agent works,
 hops once when a response ends, and waves then holds a questioning pose while
 an agent waits for you. Clicking him takes you to the Herdr pane behind his
 reaction and brings its Ghostty terminal forward. His right-click menu holds
-his only controls: pick his avatar (Block, Soft Spark, Ram or Catpuccino), connect to or
+his only controls: pick his avatar (Ram, Block, Soft Spark or Catpuccino), connect to or
 disconnect from Herdr, and quit. He never starts at login: installing the
 plugin, its startup hook or its `Connect Shepherd` action starts him, or you
 launch him by hand.

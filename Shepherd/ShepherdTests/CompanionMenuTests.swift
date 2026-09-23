@@ -19,7 +19,7 @@ struct CompanionMenuTests {
         var chosenAvatars: [Avatar] = []
 
         init() throws {
-            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
             director = CompanionDirector(behavior: behavior, startedAt: 0)
             defaults = UserDefaults(suiteName: suite)!
             let connection = HerdrConnection(transport: transport, scheduler: scheduler) { "/tmp/herdr.sock" }
@@ -85,12 +85,12 @@ struct CompanionMenuTests {
         #expect(titles == ["Avatar", "Disconnect from Herdr", "Quit Shepherd"])
     }
 
-    @Test func theAvatarMenuListsEveryAvatarAndChecksBlockByDefault() throws {
+    @Test func theAvatarMenuListsEveryAvatarAndChecksRamByDefault() throws {
         let harness = try Harness()
 
         let items = try harness.avatarItems()
 
-        #expect(items.map(\.title) == ["Block", "Soft Spark", "Ram", "Catpuccino"])
+        #expect(items.map(\.title) == ["Ram", "Block", "Soft Spark", "Catpuccino"])
         #expect(items.map(\.state) == [.on, .off, .off, .off])
     }
 
@@ -100,7 +100,7 @@ struct CompanionMenuTests {
         try harness.chooseAvatar("Soft Spark")
 
         #expect(harness.chosenAvatars == [.softSpark])
-        #expect(try harness.avatarItems().map(\.state) == [.off, .on, .off, .off])
+        #expect(try harness.avatarItems().map(\.state) == [.off, .off, .on, .off])
         #expect(AvatarPreferenceStore(defaults: harness.defaults).avatar == .softSpark)
     }
 

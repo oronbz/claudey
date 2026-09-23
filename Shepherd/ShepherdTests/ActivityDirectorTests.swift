@@ -16,7 +16,7 @@ struct ActivityDirectorTests {
     )
 
     private func director() throws -> (CompanionDirector, CompanionBehavior) {
-        let behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+        let behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
         return (CompanionDirector(behavior: behavior, startedAt: 0), behavior)
     }
 

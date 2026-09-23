@@ -13,7 +13,7 @@ struct HerdrConnectionTests {
         var events: [ActivityEvent] = []
 
         init() throws {
-            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(), startedAt: 0)
+            behavior = CompanionBehavior(catalog: try AnimationCatalog.bundled(.block), startedAt: 0)
             director = CompanionDirector(behavior: behavior, startedAt: 0)
             var path: () -> String = { "/tmp/herdr.sock" }
             connection = HerdrConnection(transport: transport, scheduler: scheduler) { path() }
