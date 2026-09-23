@@ -18,13 +18,15 @@ Start with no developer install (`tools/uninstall.sh`) and no cask
 - [ ] Confirming it installs the `shepherd` cask into `/Applications`
       (`brew list --cask shepherd` succeeds) and registers the plugin
       (`herdr plugin list` shows `shepherd`).
-- [ ] After approving his first launch under Privacy & Security, a new Herdr
-      session starts him from the startup hook, and `Connect Shepherd` wakes
-      him when he has been quit.
+- [ ] The install starts him right away (after approving his first launch
+      under Privacy & Security and running `Connect Shepherd`), watching the
+      default Herdr session.
+- [ ] A new Herdr server (`herdr --session shepherd-check`) starts him from the
+      startup hook, and `Connect Shepherd` wakes him when he has been quit.
 - [ ] With an older cask installed (`brew info --cask shepherd` shows it
       outdated), running the same `herdr plugin install` again upgrades it to
-      the latest release rather than failing, and he starts again from the
-      startup hook.
+      the latest release rather than failing, and he is running again when it
+      finishes.
 - [ ] With an older cask installed (`brew info --cask shepherd` shows it
       outdated), `brew upgrade --cask shepherd` upgrades him.
 

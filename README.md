@@ -13,9 +13,9 @@ hops once when a response ends, and waves then holds a questioning pose while
 an agent waits for you. Clicking him takes you to the Herdr pane behind his
 reaction and brings its Ghostty terminal forward. His right-click menu holds
 his only controls: pick his avatar (Block, Soft Spark, Ram or Catpuccino), connect to or
-disconnect from Herdr, and quit. He never starts at login: the plugin's
-startup hook or `Connect Shepherd` action starts him, or you launch him by
-hand.
+disconnect from Herdr, and quit. He never starts at login: installing the
+plugin, its startup hook or its `Connect Shepherd` action starts him, or you
+launch him by hand.
 
 ## Installing him
 
@@ -31,18 +31,21 @@ Herdr's preview lists the plugin's one build step, which installs the
 `shepherd` cask from [oronbz/tap](https://github.com/oronbz/homebrew-tap) into
 `/Applications`, or upgrades it when he is already installed. Without Homebrew
 the install stops and points to it; if Homebrew fails, the install fails with
-its output and the plugin is not registered. From then on the plugin's startup
-hook wakes him with each Herdr session and the `Connect Shepherd` action wakes
+its output and the plugin is not registered. Once Homebrew is done the build
+step starts him, watching Herdr's default session; in a named session, run
+`Connect Shepherd` to point him at it. From then on the plugin's startup hook
+wakes him with each Herdr server start and the `Connect Shepherd` action wakes
 him on demand. No Xcode is needed.
 
 He is ad-hoc signed, so macOS blocks his first launch. Open System Settings >
 Privacy & Security, choose Open Anyway next to Shepherd, then run
-`Connect Shepherd` or start a new Herdr session. Clicking him asks once for
+`Connect Shepherd`. Clicking him asks once for
 permission to control Ghostty; that prompt can come back after an upgrade,
 because each build carries a new signature.
 
-To update him, reinstall the plugin with the same command, or run
-`brew upgrade --cask shepherd`. To remove him, run
+To update him, reinstall the plugin with the same command, which also
+restarts him, or run `brew upgrade --cask shepherd` and then
+`Connect Shepherd`. To remove him, run
 `brew uninstall --zap --cask shepherd`, then `herdr plugin uninstall shepherd`.
 
 ### From a checkout

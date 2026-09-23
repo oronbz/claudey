@@ -22,9 +22,12 @@ Verified against Herdr 0.8.2, socket protocol 20, on 2026-09-11.
   `/opt/homebrew/bin/brew` and `/usr/local/bin/brew`, and installs the
   `oronbz/tap/shepherd` cask or upgrades it when already installed. A missing
   Homebrew or any `brew` failure exits non-zero, so Herdr aborts the install
-  and never registers the plugin without the app. Build steps get no Herdr
-  environment and must not change the manifest, so the script relies on
-  neither. `SHEPHERD_BREW_FALLBACKS` (colon-separated `brew` paths) replaces
+  and never registers the plugin without the app. After Homebrew succeeds it
+  runs `shepherd-connect.sh` so he starts right away, because Herdr runs
+  startup hooks only when a server starts, and a cask upgrade quits him. Build
+  steps get no Herdr environment, so that launch uses the default socket and
+  leaves a disconnect the owner chose in place; a failed launch only prints a
+  hint to run `Connect Shepherd`. The script must not change the manifest. `SHEPHERD_BREW_FALLBACKS` (colon-separated `brew` paths) replaces
   the standard prefixes for `tools/test-plugin.sh`.
 - `Shepherd/Herdr/` is the adapter: newline-delimited JSON over a plain BSD
   Unix socket, `session.snapshot` for the baseline, `events.subscribe` for
