@@ -1,17 +1,17 @@
 # Manual verification: the desktop companion
 
-Claudey's window behavior cannot be observed from a test bundle, so these checks
+Shepherd's window behavior cannot be observed from a test bundle, so these checks
 are run by hand on the owner's Mac. Everything above the window boundary —
 animation selection, frame timing, drag-versus-click, remembered position — is
-covered by `ClaudeyTests`.
+covered by `ShepherdTests`.
 
-Build and run from Xcode (scheme `Claudey`, destination `My Mac`). The app has no
-Dock icon and no menu-bar icon: Claudey himself is the whole interface, and
+Build and run from Xcode (scheme `Shepherd`, destination `My Mac`). The app has no
+Dock icon and no menu-bar icon: Shepherd himself is the whole interface, and
 right-clicking him opens his menu.
 
 ## Presentation
 
-- [x] Claudey stands at his 128 px size with clean transparency and crisp pixels.
+- [x] Shepherd stands at his 128 px size with clean transparency and crisp pixels.
 - [x] Idle breathing and blinking play continuously.
 - [x] He floats above ordinary windows of other apps.
 - [ ] Switching to another desktop space brings him along, rather than
@@ -39,7 +39,7 @@ right-clicking him opens his menu.
 ## Herdr (issue 03)
 
 Run `tools/demo-live-session.sh` from a pane inside Herdr; the Xcode console
-logs each `Claudey activity:` event in a debug build.
+logs each `Shepherd activity:` event in a debug build.
 
 - [x] Launching with Herdr running shows the current state without a hop:
       idle with agents at rest, concentration if one is already working.
@@ -47,8 +47,8 @@ logs each `Claudey activity:` event in a debug build.
 - [x] The demo's question plays the wave and holds the questioning pose until
       it is answered; answering resumes concentration and ends with one hop.
 - [x] Closing the demo pane returns him to rest without a hop.
-- [x] `herdr plugin action invoke claudey.connect` while he is running writes
-      the connection file and leaves a single Claudey process.
+- [x] `herdr plugin action invoke shepherd.connect` while he is running writes
+      the connection file and leaves a single Shepherd process.
 - [x] A second copy launched while one is running quits itself immediately.
 - [ ] Stopping the Herdr server puts him to rest; starting it again reconnects
       him within a few seconds without a hop.
@@ -58,7 +58,7 @@ logs each `Claudey activity:` event in a debug build.
 
 Verified 2026-09-14 in Ghostty 1.3.2 + Herdr 0.8.2 with a Claude Code session
 in a split pane, the click delivered through the real event path; the Xcode
-console logs each result as `Claudey navigation:`.
+console logs each result as `Shepherd navigation:`.
 
 - [x] An ordinary click while one session works moves Herdr's focus to that
       pane from another workspace; the log reads `focusedPane("w2H:p7")`.
@@ -69,14 +69,14 @@ console logs each result as `Claudey navigation:`.
 - [x] Closing the demo pane afterwards returns him to the aggregate state; no
       focus change happens without a click.
 - [x] A pane that closes before the click cannot be staged by hand: Herdr's
-      `pane_closed` reaches Claudey within milliseconds. Its safe failure is
+      `pane_closed` reaches Shepherd within milliseconds. Its safe failure is
       Herdr's own `pane_not_found` answer (probed live against the socket) plus
       the fixture test that turns it into host activation only.
 - [ ] Hover, drag and status changes never move focus (covered by tests; watch
-      the log for an absent `Claudey navigation:` while hovering and dragging).
+      the log for an absent `Shepherd navigation:` while hovering and dragging).
 - [ ] Clicking during the completion hop opens the session that just
       finished, even while another one keeps working.
-- [ ] With Ghostty's Automation permission revoked for Claudey (System
+- [ ] With Ghostty's Automation permission revoked for Shepherd (System
       Settings → Privacy & Security → Automation), a click still moves Herdr's
       focus and brings Ghostty forward, animations keep running, and the
       prompt does not reappear during the run.
@@ -111,26 +111,26 @@ comments); the sprite was not watched, so the visual checks stay open.
 
 ## Installation and everyday controls (issue 06)
 
-Run `tools/install.sh` (with `CLAUDEY_CONFIGURATION=Debug` to drive the menu
+Run `tools/install.sh` (with `SHEPHERD_CONFIGURATION=Debug` to drive the menu
 through signals: `-USR1` clicks, `-USR2` connects/disconnects, `-INFO`
 toggles launch at login). Driven on 2026-09-16 on the owner's Mac (macOS
 26.6.1, Xcode 27.0, Herdr 0.8.2, Ghostty 1.3.2) with the installed app's log
 as evidence; the sprite was not watched, so visual checks stay open.
 
-- [x] `tools/install.sh` builds, installs `~/Applications/Claudey.app`, links
-      the plugin, writes `app-path`, and starts exactly one Claudey from the
+- [x] `tools/install.sh` builds, installs `~/Applications/Shepherd.app`, links
+      the plugin, writes `app-path`, and starts exactly one Shepherd from the
       installed bundle. Running it again replaces the app and relinks without
       touching `~/.config/herdr/config.toml`, other plugins or `~/.claude`.
-- [x] `herdr plugin action invoke connect --plugin claudey` and the startup
+- [x] `herdr plugin action invoke connect --plugin shepherd` and the startup
       hook against a running copy leave one process and no `connect-request`.
 - [x] A second launch of the installed binary quits itself at once.
 - [x] Disconnect rests him and is remembered (`herdrConnectionEnabled = 0`);
-      the startup hook (`claudey-connect.sh` without `--connect`) leaves him
+      the startup hook (`shepherd-connect.sh` without `--connect`) leaves him
       disconnected; the Connect action reconnects and the marker is consumed.
 - [x] Reconnect after a disconnect logs `disconnected` then one `connected`
       snapshot with the sessions' current states and no hop.
 - [x] Launch at Login starts off; toggling on registers
-      `file:///Users/oronb/Applications/Claudey.app/` as an enabled login item
+      `file:///Users/oronb/Applications/Shepherd.app/` as an enabled login item
       (`sfltool dumpbtm`); toggling off leaves it disabled.
 - [x] Quit stops the process; nothing relaunches it within ten seconds; the
       startup hook starts a fresh copy afterwards.
@@ -151,7 +151,7 @@ as evidence; the sprite was not watched, so visual checks stay open.
 - [ ] Dragging the installed copy and relaunching restores his position;
       desktop spaces and full-screen exclusion behave as in Presentation above
       (the space-switch and display-disconnect checks there are still open).
-- [ ] Toggling Launch at Login on, logging out and back in starts one Claudey
+- [ ] Toggling Launch at Login on, logging out and back in starts one Shepherd
       connected to the default Herdr socket; toggling it off stops that.
 
 ## Silence

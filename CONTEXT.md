@@ -1,15 +1,15 @@
-# Claudey
+# Shepherd
 
-Claudey is a desktop companion that makes coding-agent activity visible through a small, expressive character.
+Shepherd is a desktop companion that makes coding-agent activity visible through a small, expressive character.
 
 ## Language
 
-**Claudey**:
+**Shepherd**:
 The companion that lives above desktop windows and responds playfully to interaction. He has no feeding, care, or progression requirements.
 _Avoid_: Pet game
 
 **Avatar**:
-The hand-drawn character Claudey appears as, chosen from his menu; every avatar performs the same six reactions.
+The hand-drawn character Shepherd appears as, chosen from his menu; every avatar performs the same six reactions.
 _Avoid_: Skin, character pack
 
 **Working**:
@@ -25,7 +25,7 @@ A coding agent is waiting for a user decision or answer.
 _Avoid_: Error
 
 **Session**:
-A distinct coding-agent conversation whose activity contributes to Claudey's displayed state.
+A distinct coding-agent conversation whose activity contributes to Shepherd's displayed state.
 _Avoid_: Terminal (multiple conversations can use the same terminal application)
 
 **Ready**:
