@@ -40,6 +40,11 @@
 			path = ShepherdTests;
 			sourceTree = "<group>";
 		};
+		8285EA60305308F700E4DD14 /* ShepherdUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ShepherdUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +71,7 @@
 			children = (
 				8285EA2C305308F500E4DD14 /* Shepherd */,
 				8285EA3B305308F700E4DD14 /* ShepherdTests */,
+				8285EA60305308F700E4DD14 /* ShepherdUITests */,
 				8285EA2B305308F500E4DD14 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -134,6 +140,9 @@
 			);
 			dependencies = (
 				8285EA44305308F700E4DD14 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8285EA60305308F700E4DD14 /* ShepherdUITests */,
 			);
 			name = ShepherdUITests;
 			productName = ShepherdUITests;
